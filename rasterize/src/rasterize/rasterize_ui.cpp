@@ -25,21 +25,11 @@ void RasterizeSystemUI::draw_ui() {
 			"Bunny",
 			"Armadillo",
 		};
-		static int instance_cur = 0;
 		ImGui::PushItemWidth(-1);
-		ImGui::Combo("##", &instance_cur, instances, IM_ARRAYSIZE(instances));
+		ImGui::Combo("##", &state.cur_model_id, instances, IM_ARRAYSIZE(instances));
 		ImGui::PopItemWidth();
 
 		model_dirty |= ImGui::Button("Load instance", ImVec2(-1, 0));
-		state.cur_model_id = instance_cur;
-
-		// select algorithm
-
-		// std::vector<std::function<Solid*()>> instantiate_caller = {
-		// 	&create_solid,
-		// 	&create_holed_cuboid,
-		// 	&create_compact,
-		// };
 
 		ImGui::Separator();
 
@@ -49,10 +39,8 @@ void RasterizeSystemUI::draw_ui() {
 			"Basic Hierarchical Z Buffer",
 			"Octree Hierarchical Z Buffer",
 		};
-		static int algorithm_cur = 0;
-
 		ImGui::PushItemWidth(-1);
-		ImGui::Combo("## ", &algorithm_cur, algorithms, IM_ARRAYSIZE(algorithms));
+		ImGui::Combo("## ", &state.cur_algo_id, algorithms, IM_ARRAYSIZE(algorithms));
 		ImGui::PopItemWidth();
 
 		ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(0, 0.6, 0.6));
