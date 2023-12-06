@@ -12,12 +12,12 @@ bool Triangle::contains_point(Vector2 point) const
         // cross product equivalent
         return (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y);
     };
-    const auto same_sign = [](float a, float b)
+    const auto same_sign = [](ScalarType a, ScalarType b)
     {
         return (a < 0 && b < 0) || (a > 0 && b > 0);
     };
 
-    float d[3];
+    ScalarType d[3];
     for (int i = 0; i < 3; i++)
     {
         d[i] = sign(point, p[i], p[(i + 1) % 3]);
@@ -33,20 +33,20 @@ bool Triangle::contains_point(Vector2 point) const
     return true;
 }
 
-std::tuple<float, float, float> Triangle::compute_barycentric_2d(Vector2 point) const
+std::tuple<ScalarType, ScalarType, ScalarType> Triangle::compute_barycentric_2d(Vector2 point) const
 {
     // ref: Games 101 homework by Lingqi Yan
-    const float x = point.x;
-    const float y = point.y;
+    const ScalarType x = point.x;
+    const ScalarType y = point.y;
 
-    float c1 = (x * (p[1].y - p[2].y) + (p[2].x - p[1].x) * y + p[1].x * p[2].y - p[2].x * p[1].y) / (p[0].x * (p[1].y - p[2].y) + (p[2].x - p[1].x) * p[0].y + p[1].x * p[2].y - p[2].x * p[1].y);
-    float c2 = (x * (p[2].y - p[0].y) + (p[0].x - p[2].x) * y + p[2].x * p[0].y - p[0].x * p[2].y) / (p[1].x * (p[2].y - p[0].y) + (p[0].x - p[2].x) * p[1].y + p[2].x * p[0].y - p[0].x * p[2].y);
-    float c3 = (x * (p[0].y - p[1].y) + (p[1].x - p[0].x) * y + p[0].x * p[1].y - p[1].x * p[0].y) / (p[2].x * (p[0].y - p[1].y) + (p[1].x - p[0].x) * p[2].y + p[0].x * p[1].y - p[1].x * p[0].y);
+    ScalarType c1 = (x * (p[1].y - p[2].y) + (p[2].x - p[1].x) * y + p[1].x * p[2].y - p[2].x * p[1].y) / (p[0].x * (p[1].y - p[2].y) + (p[2].x - p[1].x) * p[0].y + p[1].x * p[2].y - p[2].x * p[1].y);
+    ScalarType c2 = (x * (p[2].y - p[0].y) + (p[0].x - p[2].x) * y + p[2].x * p[0].y - p[0].x * p[2].y) / (p[1].x * (p[2].y - p[0].y) + (p[0].x - p[2].x) * p[1].y + p[2].x * p[0].y - p[0].x * p[2].y);
+    ScalarType c3 = (x * (p[0].y - p[1].y) + (p[1].x - p[0].x) * y + p[0].x * p[1].y - p[1].x * p[0].y) / (p[2].x * (p[0].y - p[1].y) + (p[1].x - p[0].x) * p[2].y + p[0].x * p[1].y - p[1].x * p[0].y);
 
     return {c1, c2, c3};
 }
 
-float Triangle::interpolate_depth(Vector2 point) const
+ScalarType Triangle::interpolate_depth(Vector2 point) const
 {
     Vector4 p[3];
     for (int i = 0; i < 3; i++) {
@@ -54,8 +54,8 @@ float Triangle::interpolate_depth(Vector2 point) const
     }
 
     auto [alpha, beta, gamma] = compute_barycentric_2d(point);
-    float w_reciprocal = 1.0 / (alpha / p[0].w + beta / p[1].w + gamma / p[2].w);
-    float z_interpolated = (alpha * p[0].z / p[0].w + beta * p[1].z / p[1].w + gamma * p[2].z / p[2].w) * w_reciprocal;
+    ScalarType w_reciprocal = 1.0 / (alpha / p[0].w + beta / p[1].w + gamma / p[2].w);
+    ScalarType z_interpolated = (alpha * p[0].z / p[0].w + beta * p[1].z / p[1].w + gamma * p[2].z / p[2].w) * w_reciprocal;
 
     return z_interpolated;
 }

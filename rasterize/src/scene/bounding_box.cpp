@@ -7,8 +7,8 @@ template class BoundingBox<2>;
 
 template<int dimension>
 void BoundingBox<dimension>::make_empty() {
-    constexpr auto k_max = std::numeric_limits<float>::max();
-    constexpr auto k_min = std::numeric_limits<float>::min();
+    constexpr auto k_max = std::numeric_limits<ScalarType>::max();
+    constexpr auto k_min = std::numeric_limits<ScalarType>::min();
 
     pmin = Vector3(k_max, k_max, k_max);
     pmax = Vector3(k_min, k_min, k_min);
@@ -20,7 +20,7 @@ Vector3 BoundingBox<dimension>::centroid() const {
 }
 
 template<int dimension>
-float BoundingBox<dimension>::extent() const {
+ScalarType BoundingBox<dimension>::extent() const {
     return glm::length(pmax - pmin);
 }
 
@@ -34,9 +34,9 @@ void BoundingBox<dimension>::round_to_int() {
 
 template<int dimension>
 void BoundingBox<dimension>::transform(const glm::mat4 &mat) {
-    float x[] = { pmin.x, pmax.x };
-    float y[] = { pmin.y, pmax.y };
-    float z[] = { pmin.z, pmax.z };
+    ScalarType x[] = { pmin.x, pmax.x };
+    ScalarType y[] = { pmin.y, pmax.y };
+    ScalarType z[] = { pmin.z, pmax.z };
 
     for (int i = 0; i < 8; i++) {
         Vector3 result = mat * Vector4(x[i % 2], y[(i / 2) % 2], z[(i / 3) % 2], 1.0f);

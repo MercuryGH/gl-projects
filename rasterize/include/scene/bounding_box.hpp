@@ -17,7 +17,7 @@ public:
     void make_empty();
 
     Vector3 centroid() const;
-    float extent() const;
+    ScalarType extent() const;
 
     void round_to_int();
     void transform(const glm::mat4 &mat);

@@ -11,8 +11,8 @@ struct Triangle {
     bool contains_point(Vector2 point) const;
 
     // point must be in triangle
-    std::tuple<float, float, float> compute_barycentric_2d(Vector2 point) const;
-    float interpolate_depth(Vector2 point) const;
+    std::tuple<ScalarType, ScalarType, ScalarType> compute_barycentric_2d(Vector2 point) const;
+    ScalarType interpolate_depth(Vector2 point) const;
 
     RgbColor get_color() const;
 };

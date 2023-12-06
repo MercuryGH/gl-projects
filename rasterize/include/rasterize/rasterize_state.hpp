@@ -13,6 +13,7 @@ namespace {
         "assets/obj/sphere.obj",
         "assets/obj/bunny.obj",
         "assets/obj/armadillo.obj",
+        "assets/obj/dragon.obj",
     };
 
     const std::function<void(Scene&)> render_funcs[] = {

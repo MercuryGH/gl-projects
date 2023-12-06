@@ -13,7 +13,7 @@ struct ZBufferNode {
     };
 
     NodeType node_type;
-    float depth; // z val
+    ScalarType depth; // z val
     RgbColor color;
 
     PixelIndex father;
