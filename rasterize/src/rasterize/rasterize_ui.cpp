@@ -21,9 +21,11 @@ void RasterizeSystemUI::draw_ui() {
 		// select model
 		ImGui::Text("Select model:");
 		const char* instances[] = { 
+			"Cube",
 			"Sphere",
 			"Bunny",
 			"Armadillo",
+			"Culled Armadillo",
 		};
 		ImGui::PushItemWidth(-1);
 		ImGui::Combo("##", &state.cur_model_id, instances, IM_ARRAYSIZE(instances));
