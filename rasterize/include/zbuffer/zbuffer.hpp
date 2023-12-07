@@ -8,13 +8,17 @@
 namespace rasterize {
 
 class ZBuffer {
+    friend class Scene;
 public:
     ZBuffer(int width, int height);
+    
+    void clear();
 
     PixelIndex pixel_idx(int x, int y) const;
     ScalarType get_depth(int x, int y) const;
     RgbColor get_color(int x, int y) const;
     
+    void save_to_file(); // debug only
     void rasterize(const Triangle& tri);
     void rasterize_with_bvh(const Triangle& tri); // update bvh
 

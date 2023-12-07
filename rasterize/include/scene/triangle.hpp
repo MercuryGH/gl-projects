@@ -3,6 +3,8 @@
 #include <util/types.hpp>
 #include <zbuffer/color.hpp>
 
+#include <camera/camera.hpp>
+
 namespace rasterize {
 
 struct Triangle {
@@ -13,8 +15,10 @@ struct Triangle {
     // point must be in triangle
     std::tuple<ScalarType, ScalarType, ScalarType> compute_barycentric_2d(Vector2 point) const;
     ScalarType interpolate_depth(Vector2 point) const;
-
     RgbColor get_color() const;
+
+    // view projection viewport
+    Triangle vpv_transform(const renderer::CameraData& camera, Vector4 viewport) const;
 };
 
 }

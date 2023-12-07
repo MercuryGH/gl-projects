@@ -27,17 +27,21 @@ void RasterizeSystem::update(float delta_time)
 	if (ui->model_dirty) {
 		// reimport model
 		scene.import_obj_model(state.cur_obj_file_path());
+
+		ui->model_dirty = false;
 	}
 
 	if (ui->draw_dirty) {
-		// re render scene
+		// re-render scene
+		scene.vpv_transform();
+		scene.clear_zbuf();
 		state.render(scene);
+		scene.write_render_result_to_texture();
 
 		ui->draw_dirty = false;
-
-		// draw call
-		do_display(scene.get_render_display_texture());
 	}
+	// draw call
+	do_display(scene.get_render_display_texture());
 }
 
 void RasterizeSystem::do_display(const GlTexture2D& display_texture) {

@@ -8,15 +8,20 @@ namespace rasterize {
 
 Scene::Scene(CameraData& camera_data, uint32_t width, uint32_t height):
     camera(camera_data), 
-    display_texture(GL_RGBA8, width, height),
+    // display_texture(GL_RGBA8, width, height),
+    display_texture(GL_RGB8, width, height),
     z_buf(width, height)
 {
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 }
 
 void Scene::import_obj_model(const char* path) {
     ObjModel obj_model(path);
     const auto& shapes = obj_model.shapes;
     const auto& attrib = obj_model.attrib;
+
+    triangles.clear();
 
     for (const auto& shape : shapes) {
         int vertex_idx_offset = 0;
@@ -37,13 +42,16 @@ void Scene::import_obj_model(const char* path) {
             triangle_idx_offset++;
         }
     }
+    transformed_triangles.clear();
+    transformed_triangles.resize(triangles.size());
 }
 
 void Scene::render_basic() {
     // zbuffer
-    for (auto& triangle : triangles) {
+    for (auto& triangle : transformed_triangles) {
         z_buf.rasterize(triangle);
     }
+    // z_buf.save_to_file();
 }
 
 void Scene::render_hierarchical() {
@@ -62,20 +70,6 @@ const GlTexture2D& Scene::get_render_display_texture() {
     return display_texture;
 }
 
-/**
-using namespace std;
-ofstream file(s);
-file << "P3\n"
-        << width << " " << height << "\n255\n";
-for (int x_t = 0; x_t < width; x_t++) {
-    for (int y_t = 0; y_t < height; y_t++) {
-        auto& color = n_array[array_id(x_t, y_t)].color;
-        file << static_cast<int>(color.r) << " " << static_cast<int>(color.g) << " " << static_cast<int>(color.b) << "  ";
-    }
-    file << "\n";
-}
-*/
-
 void Scene::write_render_result_to_texture() {
     std::vector<uint8_t> raw_data;
 
@@ -86,11 +80,19 @@ void Scene::write_render_result_to_texture() {
         }
     });
 
+    // format: RGB8
     display_texture.set_data(raw_data.data());
 }
 
-void Scene::save_render_result_to_file() {
+void Scene::vpv_transform() {
+    Vector4 viewport = Vector4(0.0f, 0.0f, (float)z_buf.width, (float)z_buf.height);
+    for (int i = 0; i < triangles.size(); i++) {
+        transformed_triangles[i] = triangles[i].vpv_transform(camera, viewport);
+    }
+}
 
+void Scene::clear_zbuf() {
+    z_buf.clear();
 }
 
 // Scene::Scene(const std::filesystem::path &scene_path) {

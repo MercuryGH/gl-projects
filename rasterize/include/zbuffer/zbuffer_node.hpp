@@ -4,7 +4,7 @@
 
 namespace rasterize {
 
-using PixelIndex = uint32_t;
+using PixelIndex = int32_t; // use -1 to indicate null
 
 struct ZBufferNode {
     enum NodeType {
@@ -12,12 +12,12 @@ struct ZBufferNode {
         eNonLeaf
     };
 
-    NodeType node_type;
-    ScalarType depth; // z val
+    NodeType node_type{ eLeaf };
+    ScalarType depth{ std::numeric_limits<ScalarType>::max() }; // z val, init to INF
     RgbColor color;
 
-    PixelIndex father;
-    PixelIndex children[4];
+    PixelIndex father{ -1 };
+    PixelIndex children[4]{ -1, -1, -1, -1 };
 
     BoundingRect bb;
 };

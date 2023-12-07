@@ -24,13 +24,14 @@ public:
     void render();
     const GlTexture2D& get_render_display_texture();
     void write_render_result_to_texture();
-    void save_render_result_to_file();
 
-	void set_scene_camera(CameraData& camera) { this->camera = camera; }
-	void set_scene_display_texture(GlTexture2D& texture) { this->display_texture = texture; }
+    void clear_zbuf();
+    void vpv_transform();
 
 private:
     std::vector<Triangle> triangles; // can be replaced with vector of models
+    std::vector<Triangle> transformed_triangles; // tris after mvpv transforms
+
     ZBuffer z_buf;
 
     CameraData& camera;

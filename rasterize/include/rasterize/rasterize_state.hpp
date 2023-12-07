@@ -10,6 +10,7 @@ namespace rasterize {
 
 namespace {
     const char* obj_file_paths[] = {
+        "assets/obj/cube.obj",
         "assets/obj/sphere.obj",
         "assets/obj/bunny2k.obj",
         "assets/obj/armadillo1m.obj",

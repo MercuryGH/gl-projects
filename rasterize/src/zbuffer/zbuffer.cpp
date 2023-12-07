@@ -2,12 +2,26 @@
 
 #include <scene/bounding_box.hpp>
 
+// TODO: debug only
+#include <string>
+#include <iostream>
+#include <fstream>
+
 namespace rasterize {
 
 ZBuffer::ZBuffer(int width, int height): width(width), height(height)
 {
     screen_bb.merge({0, 0, 1});
     screen_bb.merge({width - 1, height - 1, 1});
+    clear();
+}
+
+void ZBuffer::clear() {
+    nodes.clear();
+    nodes.resize(width * height);
+    for (int i = 0; i < width * height; i++) {
+        nodes.at(i).color = RgbColor{ 0x39, 0x38, 0x37 }; // init color
+    }
 }
 
 PixelIndex ZBuffer::pixel_idx(int x, int y) const
@@ -23,6 +37,20 @@ ScalarType ZBuffer::get_depth(int x, int y) const
 RgbColor ZBuffer::get_color(int x, int y) const
 {
     return nodes.at(pixel_idx(x, y)).color;
+}
+
+void ZBuffer::save_to_file() {
+    std::string s = "test.ppm";
+    std::ofstream file(s);
+    file << "P3\n"
+         << width << " " << height << "\n255\n";
+    for (int x_t = 0; x_t < width; x_t++) {
+        for (int y_t = 0; y_t < height; y_t++) {
+            const auto& color = get_color(x_t, y_t);
+            file << static_cast<int>(color.r) << " " << static_cast<int>(color.g) << " " << static_cast<int>(color.b) << "  ";
+        }
+        file << "\n";
+    }
 }
 
 void ZBuffer::rasterize(const Triangle &tri)

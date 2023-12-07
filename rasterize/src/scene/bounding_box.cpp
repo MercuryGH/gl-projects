@@ -89,6 +89,8 @@ void BoundingBox<2>::foreach_pixel(const std::function<void(int, int)>& func) co
     int pmin_y = static_cast<int>(pmin.y);
     int pmax_y = static_cast<int>(pmax.y);
 
+    printf("(%d, %d) to (%d, %d)\n", pmin_x, pmin_y, pmax_x, pmax_y);
+
     for (int x = pmin_x; x <= pmax_x; x++) {
         for (int y = pmin_y; y <= pmax_y; y++) {
             func(x, y);

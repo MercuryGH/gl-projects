@@ -1,5 +1,7 @@
 #include <scene/triangle.hpp>
 
+#include <glm/gtc/matrix_transform.hpp>
+
 #include <tuple>
 
 namespace rasterize
@@ -63,6 +65,14 @@ ScalarType Triangle::interpolate_depth(Vector2 point) const
 RgbColor Triangle::get_color() const {
     // simple implementation
     return RgbColor{ 0x66, 0xcc, 0xff };
+}
+
+Triangle Triangle::vpv_transform(const renderer::CameraData& camera, Vector4 viewport) const {
+    Triangle transformed_triangle;
+    for (int i = 0; i < 3; i++) {
+        transformed_triangle.p[i] = glm::project(p[i], glm::mat4(1.0f), camera.proj * camera.view, viewport);
+    }
+    return transformed_triangle;
 }
 
 
