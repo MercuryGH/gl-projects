@@ -19,9 +19,6 @@ ZBuffer::ZBuffer(int width, int height): width(width), height(height)
 void ZBuffer::clear() {
     nodes.clear();
     nodes.resize(width * height);
-    for (int i = 0; i < width * height; i++) {
-        nodes.at(i).color = RgbColor{ 0x39, 0x38, 0x37 }; // init color
-    }
 }
 
 PixelIndex ZBuffer::pixel_idx(int x, int y) const

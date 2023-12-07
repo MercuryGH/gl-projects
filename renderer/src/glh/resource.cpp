@@ -63,7 +63,7 @@ GlTexture2D::GlTexture2D(uint32_t format, uint32_t width, uint32_t height, uint3
 		uint32_t temp_height = height;
 		levels = 1;
 		while (temp_width > 1 || temp_height > 1) {
-			++levels;
+			levels++;
 			temp_width = temp_width == 1 ? 1 : temp_width / 2;
 			temp_height = temp_height == 1 ? 1 : temp_height / 2;
 		}
@@ -73,8 +73,11 @@ GlTexture2D::GlTexture2D(uint32_t format, uint32_t width, uint32_t height, uint3
 	glTextureStorage2D(gl_texture, levels, format, width, height);
 	glTextureParameteri(gl_texture, GL_TEXTURE_MIN_FILTER, levels == 1 ? GL_LINEAR : GL_LINEAR_MIPMAP_LINEAR);
 	glTextureParameteri(gl_texture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTextureParameteri(gl_texture, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTextureParameteri(gl_texture, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	// glTextureParameteri(gl_texture, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	// glTextureParameteri(gl_texture, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTextureParameteri(gl_texture, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTextureParameteri(gl_texture, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 }
 
 GlTexture2D::~GlTexture2D() {

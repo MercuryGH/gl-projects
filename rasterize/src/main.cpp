@@ -6,8 +6,9 @@ int main(int argc, char** argv) {
 	using namespace renderer;
 	using namespace rasterize;
 
+	// set width = height to avoid SHIFTING in rasterizer
 	const uint32_t k_width = 800;
-	const uint32_t k_height = 600;
+	const uint32_t k_height = 800;
 	Window window(k_width, k_height, "rasterizer");
 
 	OrbitCamera camera(Vector3(0.0f), 10.0f, window.get_aspect());

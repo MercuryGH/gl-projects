@@ -14,7 +14,7 @@ struct ZBufferNode {
 
     NodeType node_type{ eLeaf };
     ScalarType depth{ std::numeric_limits<ScalarType>::max() }; // z val, init to INF
-    RgbColor color;
+    RgbColor color{ 0x39, 0x38, 0x37 };
 
     PixelIndex father{ -1 };
     PixelIndex children[4]{ -1, -1, -1, -1 };

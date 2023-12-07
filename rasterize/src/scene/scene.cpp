@@ -9,7 +9,7 @@ namespace rasterize {
 Scene::Scene(CameraData& camera_data, uint32_t width, uint32_t height):
     camera(camera_data), 
     // display_texture(GL_RGBA8, width, height),
-    display_texture(GL_RGB8, width, height),
+    display_texture(GL_RGBA8, width, height),
     z_buf(width, height)
 {
     // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
@@ -50,6 +50,8 @@ void Scene::render_basic() {
     // zbuffer
     for (auto& triangle : transformed_triangles) {
         z_buf.rasterize(triangle);
+
+        // break;
     }
     // z_buf.save_to_file();
 }
@@ -76,11 +78,15 @@ void Scene::write_render_result_to_texture() {
     z_buf.foreach_pixel([&](int x, int y) {
         const RgbColor& color = z_buf.get_color(x, y);
         for (int i = 0; i < 3; i++) {
-            raw_data.push_back(color.data[i]);
+            raw_data.push_back(color.data[i]); // rgb
         }
+        // if (color.b > 0x50) {
+            // printf("(%d, %d)\n", x, y);
+        // }
+        raw_data.push_back(255); // alpha
     });
 
-    // format: RGB8
+    // format: RGBA8
     display_texture.set_data(raw_data.data());
 }
 

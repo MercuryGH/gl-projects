@@ -28,6 +28,7 @@ private:
 
 class GlTexture2D {
 public:
+	// if level = 0, generate log_2(min(width, height)) mipmaps
 	GlTexture2D(uint32_t format, uint32_t width, uint32_t height, uint32_t levels = 0);
 	~GlTexture2D();
 
