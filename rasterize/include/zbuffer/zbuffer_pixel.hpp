@@ -8,11 +8,13 @@ namespace rasterize {
 using PixelIndex = int32_t;
 constexpr PixelIndex k_nil = -1; // use -1 to indicate null
 
+enum NodeType {
+    eLeaf,
+    eNonLeaf
+};
+
 struct ZBufferPixel {
-    enum NodeType {
-        eLeaf,
-        eNonLeaf
-    } node_type{ eLeaf };
+    NodeType node_type{ eLeaf };
     PixelIndex parent_index{ k_nil };
     PixelIndex children_indices[4]{ k_nil, k_nil, k_nil, k_nil };
 

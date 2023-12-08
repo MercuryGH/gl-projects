@@ -43,16 +43,19 @@ void Scene::import_obj_model(const char* path) {
 }
 
 void Scene::rasterize_basic() {
-    // zbuffer
     for (auto& triangle : transformed_triangles) {
         z_buf.rasterize(triangle);
-
         // break;
     }
 }
 
 void Scene::rasterize_hierarchical() {
-
+    z_buf.build_hierarchical_z_buf();
+    for (auto& triangle : transformed_triangles) {
+        if (z_buf.is_occluded(triangle) == false) {
+            z_buf.rasterize(triangle);
+        }
+    }
 }
 
 void Scene::rasterize_octree() {

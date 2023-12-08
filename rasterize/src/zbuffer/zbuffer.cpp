@@ -68,6 +68,40 @@ void ZBuffer::set_pixel(int x, int y, ScalarType depth, const RgbColor &color)
 
 void ZBuffer::build_hierarchical_z_buf()
 {
+    int cur_width, last_width, cur_height, last_height;
+
+    std::vector<std::vector<int>> cur_map;
+    std::vector<std::vector<int>> last_map;
+
+    // construct tree (mipmap, pyramid) from bottom to top
+    while ((cur_height == 1 && cur_width == 1) == false) {
+        last_width = cur_width;
+        last_height = cur_height;
+        cur_height = cur_height % 2 == 1 ? cur_height / 2 + 1 : cur_height / 2;
+        cur_width = cur_width % 2 == 1 ? cur_width / 2 + 1 : cur_width / 2;
+
+        cur_map.resize(cur_height);
+        for (int y = 0; y < cur_height; y++) {
+            cur_map.at(y).resize(cur_width);
+        }
+
+        for (int y = 0; y < cur_height; y++) {
+            for (int x = 0; x < cur_width; x++) {
+                ZBufferPixel pixel{ .node_type = NodeType::eNonLeaf };
+                for (int y_offset = 0; y_offset < 2; y_offset++) {
+                    for (int x_offset = 0; x_offset < 2; x_offset++) {
+                        int x_last = 2 * x + x_offset;
+                        int y_last = 2 * y + y_offset;
+                        if (x_last >= last_width || y_last >= last_height) {
+                            pixel.children_indices[2 * y_offset + x_offset] = k_nil; // border
+                        } else {
+                            pixel.children_indices[2 * y_offset + x_offset] = last_map.at(y_last).at(x_last);
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 void ZBuffer::update_hierarchical_z_buf(int x, int y, ScalarType depth)
