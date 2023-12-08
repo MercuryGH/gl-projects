@@ -9,7 +9,6 @@
 namespace renderer {
 
 namespace {
-
 	void glfw_error_callback(int error, const char* desc) {
 		std::cerr << "[!GLFW ERROR] " << desc << std::endl;
 	}
@@ -33,7 +32,6 @@ namespace {
 	}
 
 	constexpr float k_imgui_font_size = 14.0f;
-
 }
 
 Window* get_glfw_user_window(GLFWwindow* glfw_window) {

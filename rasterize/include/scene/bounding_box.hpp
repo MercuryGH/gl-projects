@@ -4,9 +4,9 @@
 
 #include <util/types.hpp>
 
-#include <scene/triangle.hpp>
-
 namespace rasterize {
+
+struct Triangle;
 
 template<int dimension>
 class BoundingBox {
@@ -20,12 +20,14 @@ public:
     ScalarType extent() const;
 
     void round_to_int();
-    void transform(const glm::mat4 &mat);
+    void transform(const Matrix4 &mat);
     void merge(const BoundingBox<dimension> &rhs);
     void merge(const Triangle &tri);
     void merge(Vector3 p);
     void intersect(const BoundingBox<dimension> &rhs);
+
     bool intersect_with(const BoundingBox<dimension> &rhs) const;
+    bool contains(const BoundingBox<dimension> &rhs) const;
 
     // available when dimension = 2
     // should call round_to_int() before

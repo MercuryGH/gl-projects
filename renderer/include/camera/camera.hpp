@@ -37,6 +37,7 @@ public:
 	void forward(float delta);
 
 	void set_aspect(float aspect);
+	void set_angle(float theta_deg, float phi_deg);
 	void set_fov(float fov_deg);
 
 	const GlBuffer* get_buffer();

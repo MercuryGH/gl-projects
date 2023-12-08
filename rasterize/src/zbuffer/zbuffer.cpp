@@ -1,11 +1,7 @@
 #include <zbuffer/zbuffer.hpp>
 
 #include <scene/bounding_box.hpp>
-
-// TODO: debug only
-#include <string>
-#include <iostream>
-#include <fstream>
+#include <scene/triangle.hpp>
 
 namespace rasterize {
 
@@ -17,8 +13,11 @@ ZBuffer::ZBuffer(int width, int height): width(width), height(height)
 }
 
 void ZBuffer::clear() {
-    nodes.clear();
-    nodes.resize(width * height);
+    pixels.clear();
+    pixels.resize(width * height);
+    min_depth = std::numeric_limits<ScalarType>::max();
+    max_depth = std::numeric_limits<ScalarType>::min();
+    root_index = k_nil;
 }
 
 PixelIndex ZBuffer::pixel_idx(int x, int y) const
@@ -28,29 +27,15 @@ PixelIndex ZBuffer::pixel_idx(int x, int y) const
 
 ScalarType ZBuffer::get_depth(int x, int y) const
 {
-    return nodes.at(pixel_idx(x, y)).depth;
+    return pixels.at(pixel_idx(x, y)).depth;
 }
 
 RgbColor ZBuffer::get_color(int x, int y) const
 {
-    return nodes.at(pixel_idx(x, y)).color;
+    return pixels.at(pixel_idx(x, y)).color;
 }
 
-void ZBuffer::save_to_file() {
-    std::string s = "test.ppm";
-    std::ofstream file(s);
-    file << "P3\n"
-         << width << " " << height << "\n255\n";
-    for (int x_t = 0; x_t < width; x_t++) {
-        for (int y_t = 0; y_t < height; y_t++) {
-            const auto& color = get_color(x_t, y_t);
-            file << static_cast<int>(color.r) << " " << static_cast<int>(color.g) << " " << static_cast<int>(color.b) << "  ";
-        }
-        file << "\n";
-    }
-}
-
-void ZBuffer::rasterize(const Triangle &tri)
+void ZBuffer::rasterize(Triangle tri)
 {
     BoundingRect tri_bb;
     tri_bb.merge(tri);
@@ -61,52 +46,72 @@ void ZBuffer::rasterize(const Triangle &tri)
         Vector2 point(x, y);
         if (tri.contains_point(point)) {
             ScalarType depth = tri.interpolate_depth(point);
-            if (depth < get_depth(x, y)) {
+            if (depth < get_depth(x, y) && depth > 0) { // z-culling
                 set_pixel(x, y, depth, tri.get_color());
             }
         }
     });
 }
 
-void ZBuffer::rasterize_with_bvh(const Triangle &tri)
-{
-}
-
 void ZBuffer::set_pixel(int x, int y, ScalarType depth, const RgbColor &color)
 {
     PixelIndex id = pixel_idx(x, y);
-    nodes.at(id).color = color;
-    nodes.at(id).depth = depth;
-}
+    pixels.at(id).color = color;
+    pixels.at(id).depth = depth;
+    min_depth = std::min(depth, min_depth);
+    max_depth = std::max(depth, max_depth);
 
-// TODO: modify function name to update_bvh()
-void ZBuffer::set_pixel_with_bvh(int x, int y, ScalarType depth, const RgbColor &color)
-{
-    set_pixel(x, y, depth, color);
-    // update_bvh()
+    if (root_index != k_nil) {
+        update_hierarchical_z_buf(x, y, depth);
+    }
 }
 
 void ZBuffer::build_hierarchical_z_buf()
 {
 }
 
-void ZBuffer::clear_hierarchical_z_buf()
+void ZBuffer::update_hierarchical_z_buf(int x, int y, ScalarType depth)
 {
+    // update from bottom to top
+    for (PixelIndex index = pixel_idx(x, y); index != k_nil; ) {
+        PixelIndex parent_index = pixels.at(index).parent_index;
+        if (parent_index == k_nil) {
+            break;
+        }
+
+        auto& parent_pixel = pixels.at(parent_index);
+        ScalarType parent_depth = parent_pixel.depth;
+        if (depth < parent_depth) {
+            parent_pixel.depth = depth; // update min value
+        } else {
+            break; // no need to update
+        }
+        index = parent_index;
+    }
 }
 
-bool ZBuffer::is_in_zbuffer(const BoundingRect &rect, ScalarType depth) const
+bool ZBuffer::is_occluded(Triangle triangle) const
 {
-    return false;
+    BoundingRect tri_bb;
+    tri_bb.merge(triangle);
+    return is_occluded(root_index, tri_bb, triangle.get_min_depth());
 }
 
-bool ZBuffer::is_in_zbuffer(PixelIndex index, const BoundingRect &rect, ScalarType depth) const
+bool ZBuffer::is_occluded(PixelIndex index, BoundingRect target_bb, ScalarType depth) const
 {
-    return false;
-}
+    const auto& pixel = pixels.at(index);
+    for (int i = 0; i < 4; i++) {
+        if (pixel.children_indices[i] == k_nil) {
+            continue;
+        }
+        PixelIndex child_index = pixel.children_indices[i];
+        const BoundingRect& child_bb = pixels.at(child_index).bb;
+        if (target_bb.contains(child_bb)) {
+            return is_occluded(child_index, child_bb, depth);
+        }
+    }
 
-bool ZBuffer::is_in_zbuffer(const Triangle &tri, ScalarType depth) const
-{
-    return false;
+    return pixel.depth < depth; // depth test
 }
 
 void ZBuffer::foreach_pixel(const std::function<void(int, int)>& func) const

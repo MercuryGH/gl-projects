@@ -3,6 +3,7 @@
 #include <memory>
 
 #include <util/types.hpp>
+#include <util/cpu_timer.hpp>
 
 #include <glh/resource.hpp>
 #include <glh/program.hpp>
@@ -18,21 +19,24 @@ namespace rasterize {
 
 class RasterizeSystem {
 public:
-	RasterizeSystem(CameraData& camera_data, uint32_t width, uint32_t height);
+	RasterizeSystem(const CameraData& camera_data, uint32_t width, uint32_t height);
 	~RasterizeSystem();
 
 	void update(float delta_time);
 
 private:
-	void do_display(const GlTexture2D& display_texture);
+	void display(const GlTexture2D& display_texture);
 
 	Scene scene;
+	const CameraData& camera_data;
 
 	std::unique_ptr<GlGraphicsProgram> display_program;
 	uint32_t empty_vao{ 0 };
 
 	std::unique_ptr<RasterizeSystemUI> ui;
 	RasterizeSystemState state;
+
+	CpuTimer timer;
 };
 
 }

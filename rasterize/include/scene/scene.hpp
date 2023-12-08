@@ -5,7 +5,6 @@
 #include <glh/resource.hpp>
 #include <camera/camera.hpp>
 
-#include <scene/model.hpp>
 #include <scene/triangle.hpp>
 #include <zbuffer/zbuffer.hpp>
 
@@ -13,20 +12,21 @@ namespace rasterize {
 
 class Scene {
 public:
-    Scene(CameraData& camera_data, uint32_t width, uint32_t height);
+    Scene(uint32_t width, uint32_t height);
 
     void import_obj_model(const char* path);
 
-    void render_basic();
-    void render_hierarchical();
-    void render_octree();
+    void rasterize_basic();
+    void rasterize_hierarchical();
+    void rasterize_octree();
 
-    void render();
-    const GlTexture2D& get_render_display_texture();
-    void write_render_result_to_texture();
+    const renderer::GlTexture2D& get_display_texture();
+    void write_result_to_texture();
 
     void clear_zbuf();
-    void vpv_transform();
+    void vpv_transform(const renderer::CameraData& camera_data);
+
+    int get_n_triangles() const { return triangles.size(); }
 
 private:
     std::vector<Triangle> triangles; // can be replaced with vector of models
@@ -34,8 +34,7 @@ private:
 
     ZBuffer z_buf;
 
-    CameraData& camera;
-    GlTexture2D display_texture;
+    renderer::GlTexture2D display_texture;
 };
 
 }

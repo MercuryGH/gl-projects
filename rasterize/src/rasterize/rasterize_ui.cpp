@@ -19,8 +19,8 @@ void RasterizeSystemUI::draw_ui() {
 	if (ImGui::Begin("Rasterizer")) {
 
 		// select model
-		ImGui::Text("Select model:");
-		const char* instances[] = { 
+		ImGui::Text("Model:");
+		const char* instances[] = {
 			"Cube",
 			"Sphere",
 			"Bunny",
@@ -33,10 +33,12 @@ void RasterizeSystemUI::draw_ui() {
 
 		model_dirty |= ImGui::Button("Load instance", ImVec2(-1, 0));
 
+		ImGui::Text("#Tri: %d", state.n_triangles);
+
 		ImGui::Separator();
 
-		ImGui::Text("Rasterizer algo:");
-		const char* algorithms[] = { 
+		ImGui::Text("Rasterizer algorithm:");
+		const char* algorithms[] = {
 			"Basic Z Buffer",
 			"Basic Hierarchical Z Buffer",
 			"Octree Hierarchical Z Buffer",
@@ -48,8 +50,10 @@ void RasterizeSystemUI::draw_ui() {
 		ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(0, 0.6, 0.6));
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(0, 0.7, 0.7));
 		ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(0, 0.8, 0.8));
-		draw_dirty |= ImGui::Button("Render", ImVec2(-1, 0));
+		draw_dirty |= ImGui::Button("Rasterize", ImVec2(-1, 0));
 		ImGui::PopStyleColor(3);
+
+		ImGui::Text("Last rasterize time: %.2lf ms", state.last_rasterize_time);
 	}
 	ImGui::End();
 }

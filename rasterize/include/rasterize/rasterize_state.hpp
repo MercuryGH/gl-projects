@@ -17,10 +17,10 @@ namespace {
         "assets/obj/armadillo1m-cull.obj",
     };
 
-    const std::function<void(Scene&)> render_funcs[] = {
-        &Scene::render_basic,
-        &Scene::render_hierarchical,
-        &Scene::render_octree,
+    const std::function<void(Scene&)> rasterize_funcs[] = {
+        &Scene::rasterize_basic,
+        &Scene::rasterize_hierarchical,
+        &Scene::rasterize_octree,
     };
 }
 
@@ -32,13 +32,17 @@ class RasterizeSystemState {
         return obj_file_paths[cur_model_id];
     }
 
-    void render(Scene& scene) const {
-        render_funcs[cur_algo_id](scene);
+    void rasterize(Scene& scene) const {
+        rasterize_funcs[cur_algo_id](scene);
     }
 
 private:
     int cur_model_id{ 0 }; // select obj model
-    int cur_algo_id{ 0 }; // select render func
+    int cur_algo_id{ 0 }; // select rasterize func
+
+    double last_rasterize_time{ 0 };
+
+    int n_triangles{ 0 };
 };
 
 }

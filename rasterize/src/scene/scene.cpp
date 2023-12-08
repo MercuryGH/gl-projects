@@ -6,18 +6,14 @@
 
 namespace rasterize {
 
-Scene::Scene(CameraData& camera_data, uint32_t width, uint32_t height):
-    camera(camera_data), 
-    // display_texture(GL_RGBA8, width, height),
+Scene::Scene(uint32_t width, uint32_t height):
     display_texture(GL_RGBA8, width, height),
     z_buf(width, height)
 {
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 }
 
 void Scene::import_obj_model(const char* path) {
-    ObjModel obj_model(path);
+    renderer::ObjModel obj_model(path);
     const auto& shapes = obj_model.shapes;
     const auto& attrib = obj_model.attrib;
 
@@ -35,7 +31,7 @@ void Scene::import_obj_model(const char* path) {
                 tinyobj::real_t vx = attrib.vertices[3 * size_t(idx.vertex_index) + 0];
                 tinyobj::real_t vy = attrib.vertices[3 * size_t(idx.vertex_index) + 1];
                 tinyobj::real_t vz = attrib.vertices[3 * size_t(idx.vertex_index) + 2];
-                p[i] = Vector3(vx, vy, vz);                
+                p[i] = Vector3(vx, vy, vz);
             }
             triangles.push_back({ p[0], p[1], p[2] });
             vertex_idx_offset += 3;
@@ -46,43 +42,44 @@ void Scene::import_obj_model(const char* path) {
     transformed_triangles.resize(triangles.size());
 }
 
-void Scene::render_basic() {
+void Scene::rasterize_basic() {
     // zbuffer
     for (auto& triangle : transformed_triangles) {
         z_buf.rasterize(triangle);
 
         // break;
     }
-    // z_buf.save_to_file();
 }
 
-void Scene::render_hierarchical() {
-
-}
-
-void Scene::render_octree() {
+void Scene::rasterize_hierarchical() {
 
 }
 
-void Scene::render() {
+void Scene::rasterize_octree() {
 
 }
 
-const GlTexture2D& Scene::get_render_display_texture() {
+const renderer::GlTexture2D& Scene::get_display_texture() {
     return display_texture;
 }
 
-void Scene::write_render_result_to_texture() {
+void Scene::write_result_to_texture() {
     std::vector<uint8_t> raw_data;
 
     z_buf.foreach_pixel([&](int x, int y) {
         const RgbColor& color = z_buf.get_color(x, y);
+        const ScalarType depth = z_buf.get_depth(x, y);
+
+        const ScalarType rec = 1 / (z_buf.max_depth - z_buf.min_depth);
+        ScalarType t = glm::clamp(z_buf.get_depth(x, y), z_buf.min_depth, z_buf.max_depth);
+        ScalarType normalized_depth = (t - z_buf.min_depth) * rec;
+        uint8_t byte_depth = static_cast<uint8_t>(normalized_depth * 255);
+        byte_depth = 255 - byte_depth;
+
         for (int i = 0; i < 3; i++) {
-            raw_data.push_back(color.data[i]); // rgb
+            raw_data.push_back(byte_depth); // rgb
+            // raw_data.push_back(z_buf.get_color(x, y).data[i]); // rgb
         }
-        // if (color.b > 0x50) {
-            // printf("(%d, %d)\n", x, y);
-        // }
         raw_data.push_back(255); // alpha
     });
 
@@ -90,27 +87,15 @@ void Scene::write_render_result_to_texture() {
     display_texture.set_data(raw_data.data());
 }
 
-void Scene::vpv_transform() {
+void Scene::vpv_transform(const renderer::CameraData& camera_data) {
     Vector4 viewport = Vector4(0.0f, 0.0f, (float)z_buf.width, (float)z_buf.height);
     for (int i = 0; i < triangles.size(); i++) {
-        transformed_triangles[i] = triangles[i].vpv_transform(camera, viewport);
+        transformed_triangles[i] = triangles[i].vpv_transform(camera_data, viewport);
     }
 }
 
 void Scene::clear_zbuf() {
     z_buf.clear();
 }
-
-// Scene::Scene(const std::filesystem::path &scene_path) {
-
-// }
-
-// void Scene::foreach_instance(const std::function<void(const Instance &, const Model &)> &func) const {
-
-// }
-
-// void Scene::calc_bounding_box() {
-
-// }
 
 }

@@ -70,32 +70,9 @@ RgbColor Triangle::get_color() const {
 Triangle Triangle::vpv_transform(const renderer::CameraData& camera, Vector4 viewport) const {
     Triangle transformed_triangle;
     for (int i = 0; i < 3; i++) {
-        transformed_triangle.p[i] = glm::project(p[i], glm::mat4(1.0f), camera.proj * camera.view, viewport);
+        transformed_triangle.p[i] = glm::project(p[i], Matrix4(1.0f), camera.proj * camera.view, viewport);
     }
     return transformed_triangle;
 }
-
-
-/**flt calc_depth(const vec2& p_test, const Triangle& tri)
-{
-    const vec3& p1 = tri.p1();
-    const vec3& p2 = tri.p2();
-    const vec3& p3 = tri.p3();
-
-    flt A = (p2.y - p1.y) * (p3.z - p1.z) - (p3.y - p1.y) * (p2.z - p1.z);
-    flt B = (p2.z - p1.z) * (p3.x - p1.x) - (p3.z - p1.z) * (p2.x - p1.x);
-    flt C = (p2.x - p1.x) * (p3.y - p1.y) - (p3.x - p1.x) * (p2.y - p1.y);
-    flt D = -(A * p1.x + B * p1.y + C * p1.z);
-
-    if (glm::epsilonEqual(C, kZero, kEps)) {
-        // maybe invisible
-        return INFINITY;
-        // ERRORM("Points in a triangle maybe overlap\n");
-    }
-
-    flt depth = -(A * p_test.x + B * p_test.y + D) / C;
-    return depth;
-
-*/
 
 }

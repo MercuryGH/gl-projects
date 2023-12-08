@@ -5,8 +5,8 @@
 
 namespace rasterize {
 
-RasterizeSystem::RasterizeSystem(CameraData& camera_data, uint32_t width, uint32_t height):
-scene(camera_data, width, height)
+RasterizeSystem::RasterizeSystem(const CameraData& camera_data, uint32_t width, uint32_t height):
+camera_data(camera_data), scene(width, height)
 {
 	ui = std::make_unique<RasterizeSystemUI>(state);
 
@@ -25,26 +25,35 @@ void RasterizeSystem::update(float delta_time)
 	ui->update(delta_time);
 
 	if (ui->model_dirty) {
-		// reimport model
+		// re-import model
 		scene.import_obj_model(state.cur_obj_file_path());
+		state.n_triangles = scene.get_n_triangles();
 
 		ui->model_dirty = false;
 	}
 
 	if (ui->draw_dirty) {
-		// re-render scene
-		scene.vpv_transform();
+		// re-rasterize scene
+		scene.vpv_transform(camera_data);
 		scene.clear_zbuf();
-		state.render(scene);
-		scene.write_render_result_to_texture();
+
+		timer.start();
+
+		state.rasterize(scene);
+
+		timer.stop();
+		state.last_rasterize_time = timer.elapsed_milliseconds();
+
+		scene.write_result_to_texture();
 
 		ui->draw_dirty = false;
 	}
+
 	// draw call
-	do_display(scene.get_render_display_texture());
+	display(scene.get_display_texture());
 }
 
-void RasterizeSystem::do_display(const GlTexture2D& display_texture) {
+void RasterizeSystem::display(const GlTexture2D& display_texture) {
 	glUseProgram(display_program->id());
 
 	glBindVertexArray(empty_vao);

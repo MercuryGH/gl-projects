@@ -69,6 +69,12 @@ void OrbitCamera::set_fov(float fov_deg) {
 	update();
 }
 
+void OrbitCamera::set_angle(float theta_deg, float phi_deg) {
+	data.theta = glm::radians(theta_deg);
+	data.phi = glm::radians(phi_deg);
+	update();
+}
+
 void OrbitCamera::update() {
 	data.pos.x = data.radius * std::sin(data.phi) * std::cos(data.theta);
 	data.pos.y = data.radius * std::cos(data.phi);

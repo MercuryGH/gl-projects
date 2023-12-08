@@ -1,5 +1,7 @@
 #include <scene/bounding_box.hpp>
 
+#include <scene/triangle.hpp>
+
 namespace rasterize {
 
 template class BoundingBox<3>;
@@ -33,7 +35,7 @@ void BoundingBox<dimension>::round_to_int() {
 }
 
 template<int dimension>
-void BoundingBox<dimension>::transform(const glm::mat4 &mat) {
+void BoundingBox<dimension>::transform(const Matrix4 &mat) {
     ScalarType x[] = { pmin.x, pmax.x };
     ScalarType y[] = { pmin.y, pmax.y };
     ScalarType z[] = { pmin.z, pmax.z };
@@ -82,6 +84,13 @@ bool BoundingBox<dimension>::intersect_with(const BoundingBox<dimension> &rhs) c
         && pmin.z <= rhs.pmax.z && pmax.z >= rhs.pmin.z;
 }
 
+template<int dimension>
+bool BoundingBox<dimension>::contains(const BoundingBox<dimension> &rhs) const {
+    return pmin.x <= rhs.pmin.x && pmax.x >= rhs.pmax.x
+        && pmin.y <= rhs.pmin.y && pmax.y >= rhs.pmax.y
+        && pmin.z <= rhs.pmin.z && pmax.z >= rhs.pmax.z;
+}
+
 template<>
 void BoundingBox<2>::foreach_pixel(const std::function<void(int, int)>& func) const {
     int pmin_x = static_cast<int>(pmin.x);
@@ -89,7 +98,7 @@ void BoundingBox<2>::foreach_pixel(const std::function<void(int, int)>& func) co
     int pmin_y = static_cast<int>(pmin.y);
     int pmax_y = static_cast<int>(pmax.y);
 
-    printf("(%d, %d) to (%d, %d)\n", pmin_x, pmin_y, pmax_x, pmax_y);
+    // printf("(%d, %d) to (%d, %d)\n", pmin_x, pmin_y, pmax_x, pmax_y);
 
     for (int x = pmin_x; x <= pmax_x; x++) {
         for (int y = pmin_y; y <= pmax_y; y++) {

@@ -50,10 +50,10 @@ void ScreenCapturer::update() {
 
     float width_scale, height_scale;
 	glfwGetWindowContentScale(window.window, &width_scale, &height_scale);
-    auto width = window.width * width_scale;
-    auto height = window.height * height_scale;
+    const auto width = window.width * width_scale;
+    const auto height = window.height * height_scale;
 
-    std::unique_ptr<GLubyte[]> pixels(new GLubyte[width * height * 4]);
+    auto pixels = std::make_unique<GLubyte[]>(width * height * 4);
     glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels.get());
 
     std::string path = get_output_path();
@@ -100,7 +100,7 @@ void ScreenCapturer::start_capture(std::string path) {
 }
 
 void ScreenCapturer::stop_capture() {
-    // sequence_capturing = false; 
+    // sequence_capturing = false;
     // if (output_format == OutputFormat::eMP4)
     // {
     //     pclose(mp4_file_fd);
@@ -126,8 +126,8 @@ std::string ScreenCapturer::get_output_path() {
     constexpr int k_number_width = 3;
     zeros_prefix_str(k_number_width, n_frame_str);
 
-    std::string postfix = (output_format == OutputFormat::eTGA ? ".tga" 
-                         : output_format == OutputFormat::ePNG ? ".png" 
+    std::string postfix = (output_format == OutputFormat::eTGA ? ".tga"
+                         : output_format == OutputFormat::ePNG ? ".png"
                          : ".notimplmented");
     std::string path = path_prefix + n_frame_str + postfix;
     return path;
