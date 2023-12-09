@@ -14,7 +14,7 @@ public:
 
     void clear();
 
-    PixelIndex pixel_idx(int x, int y) const;
+    PixelIndex screen_pixel_idx(int x, int y) const;
     ScalarType get_depth(int x, int y) const;
     RgbColor get_color(int x, int y) const;
 

@@ -16,5 +16,6 @@ vec3 linear_to_srgb(vec3 v) {
 
 void main() {
     vec3 color = texture(color_image, texcoord).xyz;
-    frag_color = vec4(linear_to_srgb(color), 1.0);
+    // frag_color = vec4(linear_to_srgb(color), 1.0);
+    frag_color = vec4(color, 1.0);
 }

@@ -43,6 +43,7 @@ void Scene::import_obj_model(const char* path) {
 }
 
 void Scene::rasterize_basic() {
+    z_buf.clear();
     for (auto& triangle : transformed_triangles) {
         z_buf.rasterize(triangle);
         // break;
@@ -51,11 +52,15 @@ void Scene::rasterize_basic() {
 
 void Scene::rasterize_hierarchical() {
     z_buf.build_hierarchical_z_buf();
+    int cnt = 0;
     for (auto& triangle : transformed_triangles) {
         if (z_buf.is_occluded(triangle) == false) {
             z_buf.rasterize(triangle);
+        } else {
+            cnt++;
         }
     }
+    printf("culled #tri = %d\n", cnt);
 }
 
 void Scene::rasterize_octree() {
@@ -77,7 +82,7 @@ void Scene::write_result_to_texture() {
         ScalarType t = glm::clamp(z_buf.get_depth(x, y), z_buf.min_depth, z_buf.max_depth);
         ScalarType normalized_depth = (t - z_buf.min_depth) * rec;
         uint8_t byte_depth = static_cast<uint8_t>(normalized_depth * 255);
-        byte_depth = 255 - byte_depth;
+        // byte_depth = 255 - byte_depth; // invert black/white if necessary
 
         for (int i = 0; i < 3; i++) {
             raw_data.push_back(byte_depth); // rgb
@@ -86,7 +91,6 @@ void Scene::write_result_to_texture() {
         raw_data.push_back(255); // alpha
     });
 
-    // format: RGBA8
     display_texture.set_data(raw_data.data());
 }
 

@@ -57,7 +57,7 @@ int main(int argc, char** argv) {
 			ImGui::SliderFloat("FOV", &fov, 1.0f, 180.0f);
 			camera.set_fov(fov);
 
-			static float theta = 21.0f;
+			static float theta = 286.0f;
 			static float phi = 55.0f;
 			ImGui::SliderFloat("theta", &theta, 0.0f, 360.0f);
 			ImGui::SliderFloat("phi", &phi, 1.0f, 179.0f);

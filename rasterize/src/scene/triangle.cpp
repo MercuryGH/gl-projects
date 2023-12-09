@@ -50,14 +50,15 @@ std::tuple<ScalarType, ScalarType, ScalarType> Triangle::compute_barycentric_2d(
 
 ScalarType Triangle::interpolate_depth(Vector2 point) const
 {
+    // for math here please reference https://stackoverflow.com/questions/74261146/why-depth-values-must-be-interpolated-directly-by-barycentric-coordinates-in-ope
     Vector4 p[3];
     for (int i = 0; i < 3; i++) {
         p[i] = glm::vec4(this->p[i], 1.0f);
     }
 
     auto [alpha, beta, gamma] = compute_barycentric_2d(point);
-    ScalarType w_reciprocal = 1.0 / (alpha / p[0].w + beta / p[1].w + gamma / p[2].w);
-    ScalarType z_interpolated = (alpha * p[0].z / p[0].w + beta * p[1].z / p[1].w + gamma * p[2].z / p[2].w) * w_reciprocal;
+    ScalarType w_reciprocal = 1.0f / (alpha / p[0].w + beta / p[1].w + gamma / p[2].w); // get homo coordinate 1 / w
+    ScalarType z_interpolated = (alpha * p[0].z / p[0].w + beta * p[1].z / p[1].w + gamma * p[2].z / p[2].w) * w_reciprocal; // linear interpolate z over 1 / w
 
     return z_interpolated;
 }

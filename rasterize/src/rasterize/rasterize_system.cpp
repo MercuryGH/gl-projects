@@ -35,7 +35,7 @@ void RasterizeSystem::update(float delta_time)
 	if (ui->draw_dirty) {
 		// re-rasterize scene
 		scene.vpv_transform(camera_data);
-		scene.clear_zbuf();
+		// scene.clear_zbuf(); don't clear z buffer here. Hi-z needs depth info from previous rasterization
 
 		timer.start();
 
