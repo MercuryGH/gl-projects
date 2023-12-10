@@ -32,7 +32,7 @@ public:
 private:
     void rasterize_hierarchical_triangles(const std::vector<Triangle>& triangles);
 
-    std::vector<Triangle> triangles; // can be replaced with vector of models
+    std::vector<Triangle> triangles;
     std::vector<Triangle> transformed_triangles; // tris after mvpv transforms
 
     ZBuffer z_buf;

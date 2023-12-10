@@ -13,6 +13,5 @@ src-assets
 particle*
 shaders/particle*
 bspline*
-pathtrace*
 shaders/utils*
 

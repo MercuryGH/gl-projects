@@ -125,7 +125,6 @@ void Scene::build_octree_and_rasterize(const std::vector<Triangle>& triangles) {
     }
 }
 
-
 void Scene::rasterize_octree() {
     n_culled_triangles = 0;
     z_buf.build_hierarchical_z_buf();
