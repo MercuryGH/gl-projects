@@ -39,9 +39,9 @@ void RasterizeSystemUI::draw_ui() {
 
 		ImGui::Text("Rasterizer algorithm:");
 		const char* algorithms[] = {
-			"Basic Z Buffer",
-			"Basic Hierarchical Z Buffer",
-			"Octree Hierarchical Z Buffer",
+			"Basic",
+			"Basic Hierarchical",
+			"Octree Hierarchical",
 		};
 		ImGui::PushItemWidth(-1);
 		ImGui::Combo("## ", &state.cur_algo_id, algorithms, IM_ARRAYSIZE(algorithms));

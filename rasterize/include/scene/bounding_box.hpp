@@ -9,8 +9,7 @@ namespace rasterize {
 struct Triangle;
 
 template<int dimension>
-class BoundingBox {
-public:
+struct BoundingBox {
     BoundingBox() { make_empty(); }
     BoundingBox(Vector3 pmin, Vector3 pmax): pmin(pmin), pmax(pmax) {}
     BoundingBox(const BoundingBox& rhs): pmin(rhs.pmin), pmax(rhs.pmax) {}
@@ -33,7 +32,6 @@ public:
     // should call round_to_int() before
     void foreach_pixel(const std::function<void(int, int)>& func) const;
 
-private:
     Vector3 pmin, pmax;
 };
 

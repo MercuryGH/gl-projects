@@ -19,7 +19,6 @@ struct ZBufferPixel {
     PixelIndex children_indices[4]{ k_nil, k_nil, k_nil, k_nil };
 
     ScalarType depth{ std::numeric_limits<ScalarType>::max() }; // z val, init to INF
-    RgbColor color{ 0x00, 0x00, 0x00 };
 
     BoundingRect bb;
 };

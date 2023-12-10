@@ -16,11 +16,10 @@ public:
 
     PixelIndex screen_pixel_idx(int x, int y) const;
     ScalarType get_depth(int x, int y) const;
-    RgbColor get_color(int x, int y) const;
 
     void rasterize(Triangle tri);
 
-    void set_pixel(int x, int y, ScalarType depth, const RgbColor& color);
+    void set_pixel(int x, int y, ScalarType depth);
 
     void build_hierarchical_z_buf(); // build pyramid
     void update_hierarchical_z_buf(int x, int y, ScalarType depth);

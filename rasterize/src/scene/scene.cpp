@@ -51,20 +51,86 @@ void Scene::rasterize_basic() {
 }
 
 void Scene::rasterize_hierarchical() {
+    n_culled_triangles = 0;
     z_buf.build_hierarchical_z_buf();
-    int cnt = 0;
-    for (auto& triangle : transformed_triangles) {
+    rasterize_hierarchical_triangles(transformed_triangles);
+    printf("Culled #tri = %d\n", n_culled_triangles);
+}
+
+void Scene::rasterize_hierarchical_triangles(const std::vector<Triangle>& triangles) {
+    for (auto& triangle : triangles) {
         if (z_buf.is_occluded(triangle) == false) {
             z_buf.rasterize(triangle);
         } else {
-            cnt++;
+            n_culled_triangles++;
         }
     }
-    printf("culled #tri = %d\n", cnt);
 }
 
-void Scene::rasterize_octree() {
+void Scene::build_octree_and_rasterize(const std::vector<Triangle>& triangles) {
+    constexpr auto k_direct_rastrize_n_triangles = 16;
+    if (triangles.size() < k_direct_rastrize_n_triangles) { 
+        rasterize_hierarchical_triangles(triangles);
+        return;
+    }
 
+    // get all triangles bb
+    BoundingCuboid bb;
+    for (const auto& triangle : triangles) {
+        bb.merge(triangle);
+    }
+
+    // 8 divide
+    std::vector<BoundingCuboid> bbs(8, bb);
+    Vector3 center = bb.centroid();
+    int x_max_idx[4] = { 0, 2, 4, 6 };
+    int x_min_idx[4] = { 1, 3, 5, 7 };
+    int y_max_idx[4] = { 0, 1, 4, 5 };
+    int y_min_idx[4] = { 2, 3, 6, 7 };
+    int z_max_idx[4] = { 0, 1, 2, 3 }; // half front z
+    int z_min_idx[4] = { 4, 5, 6, 7 }; // half back z
+    for (int i = 0; i < 4; i++) {
+        bbs.at(x_max_idx[i]).pmax.x = center.x;
+        bbs.at(x_min_idx[i]).pmin.x = center.x;
+        bbs.at(y_max_idx[i]).pmax.y = center.y;
+        bbs.at(y_min_idx[i]).pmin.y = center.y;
+        bbs.at(z_max_idx[i]).pmax.z = center.z;
+        bbs.at(z_min_idx[i]).pmin.z = center.z;
+    }
+
+    std::vector<Triangle> test_tris[8];
+    std::vector<Triangle> test_edge_tris;
+    for (const auto& triangle : triangles) {
+        BoundingCuboid tri_bb;
+        tri_bb.merge(triangle);
+        bool triangle_across_edge = true;
+        for (int i = 0; i < 8; i++) {
+            if (bbs.at(i).contains(tri_bb)) {
+                test_tris[i].push_back(triangle);
+                triangle_across_edge = false;
+                break;
+            }
+        }
+        if (triangle_across_edge == true) {
+            test_edge_tris.push_back(triangle);
+        }
+    }
+
+    for (int i = 0; i < 4; i++) { // front (half front z)
+        build_octree_and_rasterize(test_tris[i]);
+    }
+    rasterize_hierarchical_triangles(test_edge_tris); // triangles across the divided area
+    for (int i = 4; i < 8; i++) { // back (half back z)
+        build_octree_and_rasterize(test_tris[i]);
+    }
+}
+
+
+void Scene::rasterize_octree() {
+    n_culled_triangles = 0;
+    z_buf.build_hierarchical_z_buf();
+    build_octree_and_rasterize(transformed_triangles);
+    printf("Culled #tri = %d\n", n_culled_triangles);
 }
 
 const renderer::GlTexture2D& Scene::get_display_texture() {
@@ -75,7 +141,6 @@ void Scene::write_result_to_texture() {
     std::vector<uint8_t> raw_data;
 
     z_buf.foreach_pixel([&](int x, int y) {
-        const RgbColor& color = z_buf.get_color(x, y);
         const ScalarType depth = z_buf.get_depth(x, y);
 
         const ScalarType rec = 1 / (z_buf.max_depth - z_buf.min_depth);
@@ -86,7 +151,7 @@ void Scene::write_result_to_texture() {
 
         for (int i = 0; i < 3; i++) {
             raw_data.push_back(byte_depth); // rgb
-            // raw_data.push_back(z_buf.get_color(x, y).data[i]); // rgb
+            // raw_data.push_back(get_color(x, y).data[i]); // rgb
         }
         raw_data.push_back(255); // alpha
     });

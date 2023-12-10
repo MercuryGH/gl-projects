@@ -63,11 +63,6 @@ ScalarType Triangle::interpolate_depth(Vector2 point) const
     return z_interpolated;
 }
 
-RgbColor Triangle::get_color() const {
-    // simple implementation
-    return RgbColor{ 0x66, 0xcc, 0xff };
-}
-
 Triangle Triangle::vpv_transform(const renderer::CameraData& camera, Vector4 viewport) const {
     Triangle transformed_triangle;
     for (int i = 0; i < 3; i++) {

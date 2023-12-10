@@ -30,11 +30,6 @@ ScalarType ZBuffer::get_depth(int x, int y) const
     return pixels.at(screen_pixel_idx(x, y)).depth;
 }
 
-RgbColor ZBuffer::get_color(int x, int y) const
-{
-    return pixels.at(screen_pixel_idx(x, y)).color;
-}
-
 void ZBuffer::rasterize(Triangle tri)
 {
     BoundingRect tri_bb;
@@ -47,16 +42,15 @@ void ZBuffer::rasterize(Triangle tri)
         if (tri.contains_point(point)) {
             ScalarType depth = tri.interpolate_depth(point);
             if (depth < get_depth(x, y) && depth > 0) { // z-culling
-                set_pixel(x, y, depth, tri.get_color());
+                set_pixel(x, y, depth);
             }
         }
     });
 }
 
-void ZBuffer::set_pixel(int x, int y, ScalarType depth, const RgbColor &color)
+void ZBuffer::set_pixel(int x, int y, ScalarType depth)
 {
     PixelIndex id = screen_pixel_idx(x, y);
-    pixels.at(id).color = color;
     pixels.at(id).depth = depth;
     min_depth = std::min(depth, min_depth);
     max_depth = std::max(depth, max_depth);
@@ -125,10 +119,6 @@ void ZBuffer::build_hierarchical_z_buf()
                         }
                     }
                 }
-                if (pixel.children_indices[0] == k_nil) {
-                    printf("nonleaf node should have at least 1 child\n");
-                    assert(false);
-                }
 
                 // assign depth from previous rasterization info
                 // so we need to launch hi-z after a basic z
@@ -164,31 +154,9 @@ void ZBuffer::build_hierarchical_z_buf()
             }
         }
         std::swap(last_map, cur_map);
-        if (last_map.size() != cur_height || last_map.at(0).size() != cur_width) {
-            printf("Bad: swap scale not match!");
-            assert(false);
-        }
     }
 
     root_index = last_map.at(0).at(0);
-
-    // Check potential errors
-    if (root_index != pixels.size() - 1) {
-        printf("Root is not the last element of node_array\n");
-        assert(false);
-    }
-    for (int i = 0; i < pixels.size() - 1; i++) {
-        if (pixels[i].parent_index < 0 || pixels[i].parent_index > pixels.size() - 1)
-            printf("Father of node %d is invalid, the value is %d. array size %d\n",
-                i, pixels[i].parent_index, pixels.size());
-
-        if (pixels[i].node_type == NodeType::eLeaf) {
-            for (int c = 0; c < 4; c++) {
-                if (pixels[i].children_indices[c] != -1)
-                    printf("Nodes %d are leave node but children's id not equal to -1\n", i);
-            }
-        }
-    }
 }
 
 void ZBuffer::update_hierarchical_z_buf(int x, int y, ScalarType depth)

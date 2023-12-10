@@ -16,7 +16,6 @@ struct Triangle {
     // point must be in triangle
     std::tuple<ScalarType, ScalarType, ScalarType> compute_barycentric_2d(Vector2 point) const;
     ScalarType interpolate_depth(Vector2 point) const;
-    RgbColor get_color() const;
     ScalarType get_min_depth() const { return std::min(p[0].z, std::min(p[1].z, p[2].z)); }
 
     // view projection viewport
