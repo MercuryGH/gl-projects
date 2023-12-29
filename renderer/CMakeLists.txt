@@ -23,6 +23,9 @@ function(add_thirdparties)
     target_include_directories(stbi INTERFACE thirdparty/stb)
 
     add_subdirectory(thirdparty/tinyobjloader)
+
+    add_library(tinyxml2 thirdparty/tinyxml2/tinyxml2.cpp)
+    target_include_directories(tinyxml2 PUBLIC thirdparty/tinyxml2/tinyxml2.h)
 endfunction()
 
 add_thirdparties()

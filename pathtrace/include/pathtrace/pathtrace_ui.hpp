@@ -13,6 +13,9 @@ public:
 private:
     PathtraceSystemState& state;
 
+    bool draw_dirty{ true };
+    bool scene_dirty{ true };
+
     void draw_ui();
 };
 

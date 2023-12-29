@@ -2,31 +2,41 @@
 
 #include <memory>
 
+#include <util/types.hpp>
+#include <util/cpu_timer.hpp>
+
 #include <glh/resource.hpp>
 #include <glh/program.hpp>
+#include <camera/camera.hpp>
 
 #include <pathtrace/pathtrace_ui.hpp>
 #include <pathtrace/pathtrace_state.hpp>
 
-#include <draw/draw.hpp>
+#include <scene/scene.hpp>
 
 namespace pathtrace {
 	using namespace renderer;
 
 class PathtraceSystem {
 public:
-	PathtraceSystem();
+	PathtraceSystem(const CameraData& camera_data, uint32_t width, uint32_t height);
 	~PathtraceSystem();
-
-	void set_camera_buffer(const GlBuffer* camera_buffer) { this->camera_buffer = camera_buffer; }
 
 	void update(float delta_time);
 
 private:
-	const GlBuffer* camera_buffer{ nullptr };
+	void display(const GlTexture2D& display_texture);
+
+	Scene scene;
+	const CameraData& camera_data;
+
+	std::unique_ptr<GlGraphicsProgram> display_program;
+	uint32_t empty_vao{ 0 };
 
 	std::unique_ptr<PathtraceSystemUI> ui;
 	PathtraceSystemState state;
+
+	CpuTimer timer;
 };
 
 }
