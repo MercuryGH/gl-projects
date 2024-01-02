@@ -8,7 +8,6 @@ namespace pathtrace {
 
 struct Triangle;
 
-template<int dimension>
 struct BoundingBox {
     BoundingBox() { make_empty(); }
     BoundingBox(Vector3 pmin, Vector3 pmax): pmin(pmin), pmax(pmax) {}
@@ -28,14 +27,9 @@ struct BoundingBox {
     bool intersect_with(const BoundingBox<dimension> &rhs) const;
     bool contains(const BoundingBox<dimension> &rhs) const;
 
-    // available when dimension = 2
-    // should call round_to_int() before
     void foreach_pixel(const std::function<void(int, int)>& func) const;
 
     Vector3 pmin, pmax;
 };
-
-using BoundingRect = BoundingBox<2>;
-using BoundingCuboid = BoundingBox<3>;
 
 }

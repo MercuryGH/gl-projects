@@ -6,6 +6,10 @@
 
 #include <glh/model.hpp>
 
+/**
+ * maths based on https://raytracing.github.io/books/RayTracingTheRestOfYourLife.html
+*/
+
 namespace pathtrace {
 
 Scene::Scene(uint32_t width, uint32_t height):
