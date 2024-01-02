@@ -50,8 +50,8 @@ void ScreenCapturer::update() {
 
     float width_scale, height_scale;
 	glfwGetWindowContentScale(window.window, &width_scale, &height_scale);
-    const auto width = window.width * width_scale;
-    const auto height = window.height * height_scale;
+    const size_t width = static_cast<size_t>(window.width * width_scale);
+    const size_t height = static_cast<size_t>(window.height * height_scale);
 
     auto pixels = std::make_unique<GLubyte[]>(width * height * 4);
     glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels.get());
