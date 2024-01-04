@@ -5,6 +5,9 @@
 #include <glh/resource.hpp>
 #include <camera/camera.hpp>
 
+#include <material/material.hpp>
+#include <light/emissive.hpp>
+
 // #include <scene/triangle.hpp>
 // #include <zbuffer/zbuffer.hpp>
 
@@ -26,12 +29,8 @@ public:
     // int get_n_triangles() const { return triangles.size(); }
 
 private:
-//     void rasterize_hierarchical_triangles(const std::vector<Triangle>& triangles);
-//
 //     std::vector<Triangle> triangles;
 //     std::vector<Triangle> transformed_triangles; // tris after mvpv transforms
-//
-//     ZBuffer z_buf;
 
     renderer::GlTexture2D display_texture;
 

@@ -4,6 +4,8 @@
 #include <glm/glm.hpp>
 
 using VertexIndexType = uint32_t;
+using ObjectIndexType = uint32_t;
+
 using ScalarType = float;
 
 using Vector3 = glm::vec3;
