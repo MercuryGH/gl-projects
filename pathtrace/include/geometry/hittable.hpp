@@ -1,7 +1,5 @@
 #pragma once
 
-#include <util/types.hpp>
-
 #include <light/ray.hpp>
 #include <light/hit_record.hpp>
 

@@ -1,7 +1,5 @@
 #pragma once
 
-#include <util/types.hpp>
-
 #include <geometry/hittable.hpp>
 
 namespace pathtrace {

@@ -22,4 +22,6 @@ T get_uniform_int_distribution(T l, T r) {
     return dist(get_rng());
 }
 
+template double get_uniform_real_distribution<double>(double l, double r);
+template int get_uniform_int_distribution<int>(int l, int r);
 }
