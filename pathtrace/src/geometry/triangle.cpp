@@ -5,15 +5,15 @@
 namespace pathtrace {
 
 ScalarType Triangle::get_area() const {
-
+    return 0;
 }
 
-ScalarType Triangle::get_centroid() const {
-
+Vector3 Triangle::get_centroid() const {
+    return { 0, 0, 0 };
 }
 
 bool Triangle::hit(const Ray& ray, Vector2 t_range, HitRecord& hit_record) const {
-
+    return false;
 }
 
 void Triangle::get_bounding_box(BoundingBox &ret_bb) const {

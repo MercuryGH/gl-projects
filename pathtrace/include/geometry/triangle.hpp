@@ -12,7 +12,7 @@ public:
     Vector3 p(int index) const { return pos[index]; }
 
     ScalarType get_area() const override;
-    ScalarType get_centroid() const override;
+    Vector3 get_centroid() const override;
 
     bool hit(const Ray& ray, Vector2 t_range, HitRecord& hit_record) const override;
     void get_bounding_box(BoundingBox &ret_bb) const override;

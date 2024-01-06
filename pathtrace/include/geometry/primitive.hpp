@@ -9,7 +9,7 @@ namespace pathtrace {
 class IPrimitive {
 public:
     virtual ScalarType get_area() const = 0;
-    virtual ScalarType get_centroid() const = 0;
+    virtual Vector3 get_centroid() const = 0;
     // uniform_sample_point
 };
 
