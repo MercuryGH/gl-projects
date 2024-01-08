@@ -1,5 +1,6 @@
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <camera/camera.hpp>
+#include <util/math.hpp>
 
 #include <algorithm>
 
@@ -14,8 +15,6 @@ namespace {
 		glm::mat4 proj;
 		glm::mat4 view_inv;
 	};
-
-	constexpr float k_pi = 3.141592653589793238463f;
 
 	constexpr float k_z_near = 0.001f;
 	constexpr float k_z_far = 100000.0f;

@@ -23,5 +23,6 @@ T get_uniform_int_distribution(T l, T r) {
 }
 
 template double get_uniform_real_distribution<double>(double l, double r);
+template float get_uniform_real_distribution<float>(float l, float r);
 template int get_uniform_int_distribution<int>(int l, int r);
 }
