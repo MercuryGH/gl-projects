@@ -17,7 +17,7 @@ ScalarType PhongMaterial::pdf_diffuse(Vector3 wi, Vector3 wo, Vector3 normal) co
         return 0;
     }
 
-    return normal_cosine * k_pi_inv;
+    return normal_cosine * k_inv_pi;
 }
 
 std::pair<Vector3, ScalarType> PhongMaterial::sample_diffuse(Vector3 wo, const HitRecord& hit_record) const {
@@ -40,7 +40,7 @@ ScalarType PhongMaterial::pdf_specular(Vector3 wi, Vector3 wo, Vector3 normal) c
 
     // phong ndf (not blinn-phong). Using reflctance but not half-way vector
     // ref: https://agraphicsguynotes.com/posts/sample_microfacet_brdf/
-    return (phong_exponent + 1) * k_2pi_inv * std::pow(glm::dot(wi, w_reflect), phong_exponent);
+    return (phong_exponent + 1) * k_inv_2pi * std::pow(glm::dot(wi, w_reflect), phong_exponent);
 }
 
 std::pair<Vector3, ScalarType> PhongMaterial::sample_specular(Vector3 wo, const HitRecord& hit_record) const {
@@ -90,7 +90,7 @@ Vector3 PhongMaterial::bxdf(Vector3 wi, Vector3 wo, const HitRecord& hit_record)
     }
 
     Vector3 w_reflect = util::reflect(wo, normal);
-    Vector3 diffuse_term = kd * k_pi_inv;
+    Vector3 diffuse_term = kd * k_inv_pi;
     Vector3 specular_term = ks * (phong_exponent + 2) * std::pow(glm::dot(w_reflect, wo), phong_exponent);
 
     return diffuse_term + specular_term;

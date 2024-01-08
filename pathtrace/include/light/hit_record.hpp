@@ -12,8 +12,8 @@ struct HitRecord {
     Vector3 normal;
     ScalarType t;
     Vector2 uv;
-    const IMaterial& material;
-    const IHittable& hit_object;
+    const IMaterial* material;
+    const IHittable* hit_object;
 };
 
 }

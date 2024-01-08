@@ -1,12 +1,16 @@
 #include <geometry/bounding_box.hpp>
+
 #include <geometry/triangle.hpp>
+#include <util/math.hpp>
 
 namespace pathtrace {
 
-void BoundingBox::make_empty() {
-    constexpr auto k_max = std::numeric_limits<ScalarType>::max();
-    constexpr auto k_min = std::numeric_limits<ScalarType>::min();
+BoundingBox::BoundingBox(const Triangle& tri) {
+    make_empty();
+    merge(tri);
+}
 
+void BoundingBox::make_empty() {
     pmin = Vector3(k_max, k_max, k_max);
     pmax = Vector3(k_min, k_min, k_min);
 }
