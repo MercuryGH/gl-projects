@@ -18,13 +18,8 @@ std::pair<Vector3, ScalarType> IAreaLight::uniform_sample_ray(Vector3 wo, const 
 
     Vector3 wi = light_ray.dir;
 
-    bool ray_hits_light = world.hit(light_ray, Vector2(k_eps, k_max), light_record);
+    bool ray_hits_light = world.hit(light_ray, Vector2{ k_eps, k_max }, light_record);
     bool direct_hit_light = glm::distance(random_p, light_record.pos) < k_eps; // the ray hits the light with no obstacle
-
-    // TODO: debug only
-    if (ray_hits_light)
-        assert(direct_hit_light == true);
-
     bool object_face_judge = glm::dot(prev_record.normal, wi) > 0;
     ScalarType light_cosine = -glm::dot(light_record.normal, wi);
     bool light_face_judge = light_cosine > 0;

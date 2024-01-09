@@ -19,7 +19,7 @@ namespace pathtrace {
 
 class PathtraceSystem {
 public:
-	PathtraceSystem(const CameraData& camera_data, uint32_t width, uint32_t height);
+	PathtraceSystem(uint32_t width, uint32_t height);
 	~PathtraceSystem();
 
 	void update(float delta_time);
@@ -28,7 +28,6 @@ private:
 	void display(const GlTexture2D& display_texture);
 
 	Scene scene;
-	const CameraData& camera_data;
 
 	std::unique_ptr<GlGraphicsProgram> display_program;
 	uint32_t empty_vao{ 0 };

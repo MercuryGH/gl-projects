@@ -5,8 +5,7 @@
 
 namespace pathtrace {
 
-PathtraceSystem::PathtraceSystem(const CameraData& camera_data, uint32_t width, uint32_t height):
-camera_data(camera_data), scene(width, height)
+PathtraceSystem::PathtraceSystem(uint32_t width, uint32_t height): scene(width, height)
 {
 	ui = std::make_unique<PathtraceSystemUI>(state);
 

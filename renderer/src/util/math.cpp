@@ -33,7 +33,7 @@ Vector3 local_to_world(Vector3 local, Vector3 unit_z) {
     Vector3 unit_y = (std::abs(unit_z.x) > 0.9f) ? Vector3{ 0, 1, 0 } : Vector3{ 1, 0, 0 };
 
     Vector3 unit_x = glm::normalize(glm::cross(unit_y, unit_z));
-    assert(glm::cross(unit_y, unit_z) > util::k_eps);
+    assert(glm::cross(unit_y, unit_z).length() > k_eps);
 
     Matrix3 mat = { unit_x, unit_y, unit_z };
     return mat * local;

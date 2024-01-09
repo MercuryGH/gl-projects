@@ -7,6 +7,8 @@ namespace pathtrace {
 
 class TriangularAreaLight: public IAreaLight {
 public:
+    TriangularAreaLight(const Triangle& tri): tri(tri) {}
+
     ScalarType get_area() const override {
         return tri.get_area();
     }

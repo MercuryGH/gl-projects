@@ -15,12 +15,26 @@ void BoundingBox::make_empty() {
     pmax = Vector3(k_min, k_min, k_min);
 }
 
+bool BoundingBox::valid() const { 
+    return pmax[0] < pmin[0];
+}
+
 Vector3 BoundingBox::centroid() const {
     return (pmin + pmax) * 0.5f;
 }
 
-ScalarType BoundingBox::extent() const {
-    return glm::length(pmax - pmin);
+Vector3 BoundingBox::extent() const {
+    return pmax - pmin;
+}
+
+int BoundingBox::max_extent_dim() const {
+    Vector3 d = extent();
+    if (d.x > d.y && d.x > d.z) {
+        return 0;
+    } else if (d.y > d.z) {
+        return 1;
+    }
+    return 2;
 }
 
 void BoundingBox::round_to_int() {
@@ -80,21 +94,35 @@ bool BoundingBox::contains(const BoundingBox &rhs) const {
         && pmin.z <= rhs.pmin.z && pmax.z >= rhs.pmax.z;
 }
 
+/**
+ * ray-AABB intersection
+ * ref: https://raytracing.github.io/books/RayTracingTheNextWeek.html
+*/
 bool BoundingBox::hit(const Ray& ray, Vector2 t_range, HitRecord& hit_record) const {
-    // ScalarType t_min = t_range[0];
-    // ScalarType t_max = t_range[1];
-    // for (int a = 0; a < 3; a++) {
-    //     auto invD = 1.0f / ray.dir[a];
-    //     auto t0 = (min_p[a] - ray.origin[a]) * invD;
-    //     auto t1 = (max_p[a] - ray.origin[a]) * invD;
-    //     if (invD < 0.0f)
-    //         std::swap(t0, t1);
-    //     t_min = t0 > t_min ? t0 : t_min;
-    //     t_max = t1 < t_max ? t1 : t_max;
-    //     if (t_max < t_min)
-    //         return false;
-    // }
-    // t_hit = t_min;
+    ScalarType t_min = t_range[0];
+    ScalarType t_max = t_range[1];
+    for (int a = 0; a < 3; a++) {
+        ScalarType inv_d = 1.0f / ray.dir[a];
+        ScalarType t0 = (pmin[a] - ray.origin[a]) * inv_d;
+        ScalarType t1 = (pmax[a] - ray.origin[a]) * inv_d;
+        if (inv_d < 0.0f)
+            std::swap(t0, t1);
+        t_min = t0 > t_min ? t0 : t_min;
+        t_max = t1 < t_max ? t1 : t_max;
+        if (t_max < t_min)
+            return false;
+    }
+
+    ScalarType t = t_min;
+    hit_record = HitRecord {
+        .pos = ray.origin + ray.dir * t,
+        .t = t,
+        .normal = Vector3{ 0, 0, 0 }, // not important
+        .uv = Vector2{ 0, 0 }, // not important
+        .material = nullptr,
+        .hit_object = this,
+        .hit_geometry = nullptr
+    };
     return true;
 }
 

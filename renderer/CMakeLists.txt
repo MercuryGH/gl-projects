@@ -25,7 +25,7 @@ function(add_thirdparties)
     add_subdirectory(thirdparty/tinyobjloader)
 
     add_library(tinyxml2 thirdparty/tinyxml2/tinyxml2.cpp)
-    target_include_directories(tinyxml2 PUBLIC thirdparty/tinyxml2/tinyxml2.h)
+    target_include_directories(tinyxml2 PUBLIC thirdparty/tinyxml2)
 endfunction()
 
 add_thirdparties()
@@ -50,5 +50,6 @@ target_link_libraries(${TARGET_NAME} PUBLIC
     imgui
     stbi
     tinyobjloader
+    tinyxml2
     assets shaders_spv
 )

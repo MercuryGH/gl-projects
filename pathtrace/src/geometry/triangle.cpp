@@ -49,11 +49,12 @@ bool Triangle::hit(const Ray& ray, Vector2 t_range, HitRecord& hit_record) const
         ScalarType w = 1.0f - u - v;
         hit_record = HitRecord {
             .pos = ray.origin + ray.dir * t,
-            .normal = normal,
             .t = t,
+            .normal = get_normal(),
             .uv = uv[0] * w + uv[1] * u + uv[2] * v,
             .material = material,
-            .hit_object = this
+            .hit_object = this,
+            .hit_geometry = this
         };
         return true;
     }

@@ -14,8 +14,10 @@ public:
     BoundingBox(const Triangle& tri);
     void make_empty();
 
+    bool valid() const;
     Vector3 centroid() const;
-    ScalarType extent() const;
+    Vector3 extent() const;
+    int max_extent_dim() const;
 
     void round_to_int();
     void transform(const Matrix4& mat);
