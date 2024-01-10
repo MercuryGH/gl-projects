@@ -26,6 +26,8 @@ function(add_thirdparties)
 
     add_library(tinyxml2 thirdparty/tinyxml2/tinyxml2.cpp)
     target_include_directories(tinyxml2 PUBLIC thirdparty/tinyxml2)
+
+    add_subdirectory(thirdparty/nativefiledialog)
 endfunction()
 
 add_thirdparties()
@@ -51,5 +53,7 @@ target_link_libraries(${TARGET_NAME} PUBLIC
     stbi
     tinyobjloader
     tinyxml2
-    assets shaders_spv
+    nativefiledialog
+
+    cached_assets shaders_spv
 )

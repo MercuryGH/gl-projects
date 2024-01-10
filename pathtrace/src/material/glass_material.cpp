@@ -15,7 +15,7 @@ Vector3 GlassMaterial::bxdf(Vector3 wi, Vector3 wo, const HitRecord& hit_record)
     return energy_conserve * Vector3{ 1, 1, 1 };
 }
 
-std::pair<Vector3, ScalarType> GlassMaterial::scatter(Vector3 wo, const HitRecord& hit_record) const {
+std::pair<Vector3, ScalarType> GlassMaterial::sample_wi(Vector3 wo, const HitRecord& hit_record) const {
     Vector3 normal = hit_record.normal;
 
     ScalarType normal_cosine = glm::dot(normal, wo);

@@ -7,57 +7,68 @@ namespace pathtrace {
 
 PathtraceSystem::PathtraceSystem(uint32_t width, uint32_t height): scene(width, height)
 {
-	ui = std::make_unique<PathtraceSystemUI>(state);
+    ui = std::make_unique<PathtraceSystemUI>(state);
 
-	display_program = build_graphics_program("display/display.vert.spv", "display/display.frag.spv");
-	// display_texture = read_texture()
-	glCreateVertexArrays(1, &empty_vao);
+    display_program = build_graphics_program("display/display.vert.spv", "display/display.frag.spv");
+    glCreateVertexArrays(1, &empty_vao);
 }
 
 PathtraceSystem::~PathtraceSystem()
 {
-	glDeleteVertexArrays(1, &empty_vao);
+    glDeleteVertexArrays(1, &empty_vao);
 }
 
 void PathtraceSystem::update(float delta_time)
 {
-	ui->update(delta_time);
+    ui->update(delta_time);
+    std::string ret = state.get_file_path("123", "456");
+    printf("%s\n", ret.c_str());
+    return;
 
-	if (ui->scene_dirty) {
-		// re-import scene
-		// scene.import_scene(state.cur_obj_file_path());
-		// state.n_triangles = scene.get_n_triangles();
+    if (ui->scene_dirty) {
+        bool read_from_cache = !(ui->import_scene_from_disk && state.cur_scene_id == 0);
 
-		ui->scene_dirty = false;
-	}
+        // if () {
+        //     const char* path = state.last_import_scene_path_from_disk;
+        //     ui->import_scene_from_disk = false;
 
-	if (ui->draw_dirty) {
-		// re-pathtrace scene
-		// scene.vpv_transform(camera_data);
-		// scene.clear_zbuf(); // don't clear z buffer here. Hi-z uses depth info from previous rasterization
+        // } else {
+        //     // import from cache
+        //     std::string obj_file_path = state.cached_scene_file_path(".obj");
+        //     std::string mtl_file_path = state.cached_scene_file_path(".mtl");
+        //     std::string xml_file_path = state.cached_scene_file_path(".xml");
+        // }
 
-		timer.start();
+        // scene.import_scene_file(obj_file_path.c_str(), mtl_file_path.c_str(), xml_file_path.c_str(), read_from_cache);
 
-		scene.render();
+        ui->scene_dirty = false;
+    }
 
-		timer.stop();
-		state.last_render_time = timer.elapsed_milliseconds();
+    if (ui->draw_dirty) {
+        // re-pathtrace scene
 
-		// scene.write_result_to_texture();
+        timer.start();
 
-		ui->draw_dirty = false;
-	}
+        scene.render(state.spp);
 
-	// draw call
-	display(scene.get_display_texture());
+        timer.stop();
+        state.last_render_time = timer.elapsed_milliseconds();
+
+        // scene.write_result_to_texture();
+
+        ui->draw_dirty = false;
+    }
+
+    // draw call
+    display(scene.get_display_texture());
 }
 
 void PathtraceSystem::display(const GlTexture2D& display_texture) {
-	glUseProgram(display_program->id());
+    glUseProgram(display_program->id());
 
-	glBindVertexArray(empty_vao);
-	glBindTexture(GL_TEXTURE_2D, display_texture.id());
-	glDrawArrays(GL_TRIANGLES, 0, 3);
+    glBindVertexArray(empty_vao);
+    glBindTexture(GL_TEXTURE_2D, display_texture.id());
+    glDrawArrays(GL_TRIANGLES, 0, 3);
 }
 
 

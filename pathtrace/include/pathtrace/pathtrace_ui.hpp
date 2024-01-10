@@ -13,6 +13,7 @@ public:
 private:
     PathtraceSystemState& state;
 
+    bool import_scene_from_disk{ false };
     bool draw_dirty{ true };
     bool scene_dirty{ true };
 

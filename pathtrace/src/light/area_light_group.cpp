@@ -16,6 +16,10 @@ namespace {
 }
 
 AreaLightGroup::~AreaLightGroup() {
+    clear();
+}
+
+void AreaLightGroup::clear() {
     for (auto area_light : area_lights) {
         delete area_light;
     }
@@ -51,6 +55,57 @@ ScalarType AreaLightGroup::pdf(const Ray& ray, const IHittable& world, HitRecord
     }
 
     return 0.0f;
+}
+
+Vector3 AreaLightGroup::sample_light(Vector3 wo, const IHittable& world, const HitRecord& hit_record) {
+    // power heuristic MIS
+    const auto power_heuristic = [](ScalarType f, ScalarType g) {
+        ScalarType sq_f = util::sq(f);
+        ScalarType sq_g = util::sq(g);
+
+        return sq_f / (sq_f + sq_g);
+    };
+
+    Vector3 color{ 0, 0, 0 };
+    const auto& surface_material = hit_record.material;
+    HitRecord light_record;
+
+    // sample light (direct illumination)
+    auto [light_wi, light_pdf] = uniform_sample_ray(wo, world, hit_record, light_record);
+    if (light_pdf > 0) {
+        ScalarType bxdf_pdf = surface_material->pdf(light_wi, wo, hit_record);
+        if (bxdf_pdf > 0) {
+            Vector3 bxdf = surface_material->bxdf(light_wi, wo, hit_record);
+
+            assert(light_record.material->get_type() == eEmissive); // TODO: debug only
+
+            ScalarType weight = power_heuristic(light_pdf, bxdf_pdf);
+            ScalarType wi_normal_cosine = glm::dot(light_wi, hit_record.normal);
+            Vector3 emissive = light_record.material->light_emitted();
+
+            color += bxdf * wi_normal_cosine * weight * emissive / light_pdf;
+        }
+    }
+    
+    // sample wi (indirect illumination)
+    auto [bxdf_wi, bxdf_pdf] = surface_material->sample_wi(wo, hit_record);
+    if (bxdf_pdf > 0) {
+        Ray wi_ray{ .origin = hit_record.pos, .dir = bxdf_wi };
+        ScalarType light_pdf = pdf(wi_ray, world, light_record);
+        if (light_pdf > 0) {
+            Vector3 bxdf = surface_material->bxdf(bxdf_wi, wo, hit_record);
+
+            assert(light_record.material->get_type() == eEmissive);
+
+            ScalarType weight = power_heuristic(bxdf_pdf, light_pdf);
+            ScalarType wi_normal_cosine = glm::dot(bxdf_wi, hit_record.normal);
+            Vector3 emissive = light_record.material->light_emitted();
+
+            color += bxdf * wi_normal_cosine * weight * emissive / light_pdf;
+        }
+    }
+
+    return color;
 }
 
 }

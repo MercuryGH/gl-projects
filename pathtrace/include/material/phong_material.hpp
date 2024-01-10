@@ -15,7 +15,7 @@ public:
 
     ScalarType pdf(Vector3 wi, Vector3 wo, const HitRecord& hit_record) const override;
     Vector3 bxdf(Vector3 wi, Vector3 wo, const HitRecord& hit_record) const override;
-    std::pair<Vector3, ScalarType> scatter(Vector3 wo, const HitRecord& hit_record) const override;
+    std::pair<Vector3, ScalarType> sample_wi(Vector3 wo, const HitRecord& hit_record) const override;
     MaterialType get_type() const override { return ePhong; }
     Vector3 light_emitted() const override { return emissive; }
 

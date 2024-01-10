@@ -28,6 +28,5 @@ target_link_libraries(${TARGET_NAME} PRIVATE
     glm::glm 
     imgui 
     stbi 
-    json
     # tinyobjloader
 )

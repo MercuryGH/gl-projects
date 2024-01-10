@@ -15,9 +15,9 @@ public:
     int get_n_pixels() const { return width * height; }
     int get_pixel_idx(int x, int y) const { return y * width + x; }
     Vector3 get_pixel(int x, int y) const { return colors.at(get_pixel_idx(x, y)); }
-    void set_pixel(int x, int y, Vector3 rgb_color) { colors.at(get_pixel_idx(x, y)) = rgb_color; }
+    void add_pixel_color(int x, int y, Vector3 rgb_color) { colors.at(get_pixel_idx(x, y)) += rgb_color; }
 
-    void foreach_pixel(const std::function<void(int, int)>& func) const;
+    void foreach_pixel_parallel(const std::function<void(int, int)>& func) const;
 
 private:
     int width;

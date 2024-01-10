@@ -18,13 +18,13 @@ std::pair<Vector3, ScalarType> IAreaLight::uniform_sample_ray(Vector3 wo, const 
 
     Vector3 wi = light_ray.dir;
 
-    bool ray_hits_light = world.hit(light_ray, Vector2{ k_eps, k_max }, light_record);
-    bool direct_hit_light = glm::distance(random_p, light_record.pos) < k_eps; // the ray hits the light with no obstacle
+    bool hits = world.hit(light_ray, Vector2{ k_eps, k_max }, light_record);
+    bool hit_light = glm::distance(random_p, light_record.pos) < k_eps; // the ray hits the light with no obstacle
     bool object_face_judge = glm::dot(prev_record.normal, wi) > 0;
     ScalarType light_cosine = -glm::dot(light_record.normal, wi);
     bool light_face_judge = light_cosine > 0;
 
-    if (ray_hits_light && direct_hit_light && object_face_judge && object_face_judge) {
+    if (hits && hit_light && object_face_judge && object_face_judge) {
         ScalarType sq_distance = glm::dot(light_record.pos - prev_record.pos, light_record.pos - prev_record.pos);
         ScalarType area = get_area();
         ScalarType pdf = sq_distance / (area * light_cosine);

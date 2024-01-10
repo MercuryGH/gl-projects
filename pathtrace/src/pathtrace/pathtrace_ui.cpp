@@ -2,6 +2,8 @@
 
 #include <imgui.h>
 
+#include <glh/file_system.hpp>
+
 namespace pathtrace {
 
 PathtraceSystemUI::PathtraceSystemUI(PathtraceSystemState& state): state(state) {
@@ -14,18 +16,30 @@ void PathtraceSystemUI::update(float delta_time) {
 void PathtraceSystemUI::draw_ui() {
 	if (ImGui::Begin("Path Tracer")) {
 
-		// select scene
-		ImGui::Text("Scene:");
+		// select cached scene
+		ImGui::Text("Select a cached scene:");
 		const char* instances[] = {
-			"Cube",
-			"Sphere",
-			"Bunny",
-			"Armadillo",
-			"Culled Armadillo",
+			"None (use customized scene)",
+			"Classic Cornell Box",
+			"Modified Cornell Box",
 		};
 		ImGui::PushItemWidth(-1);
 		ImGui::Combo("##", &state.cur_scene_id, instances, IM_ARRAYSIZE(instances));
 		ImGui::PopItemWidth();
+
+		ImGui::Text("OR, open a scene folder:");
+
+		ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(0, 0.6, 0.2));
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(0, 0.7, 0.3));
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(0, 0.8, 0.3));
+		if (ImGui::Button("Open scene folder", ImVec2(-1, 0))) {
+			const char* path = renderer::select_dir();
+			if (path != nullptr) {
+				state.last_import_scene_path_from_disk = path;
+				import_scene_from_disk = true;
+			}
+		}
+		ImGui::PopStyleColor(3);
 
 		scene_dirty |= ImGui::Button("Load scene", ImVec2(-1, 0));
 

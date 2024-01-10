@@ -23,10 +23,11 @@ public:
     virtual Vector3 bxdf(Vector3 wi, Vector3 wo, const HitRecord& hit_record) const = 0;
 
     /**
-     * sample the direction of wi by given wo
+     * sample the direction of wi by given wo, rays are in the same surface position 
+     * assume path tracing starts at camera and ends at light
      * returns { wi, pdf(wo, wi) }
     */
-    virtual std::pair<Vector3, ScalarType> scatter(Vector3 wo, const HitRecord& hit_record) const = 0;
+    virtual std::pair<Vector3, ScalarType> sample_wi(Vector3 wo, const HitRecord& hit_record) const = 0;
 
     /**
      * runtime cast

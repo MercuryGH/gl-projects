@@ -2,7 +2,7 @@
 
 #include <cmrc/cmrc.hpp>
 CMRC_DECLARE(shaders_spv);
-CMRC_DECLARE(assets);
+CMRC_DECLARE(cached_assets);
 
 #include <glad/glad.h>
 
@@ -25,6 +25,13 @@ std::unique_ptr<GlShader> build_shader(const char* spv_path, uint32_t type) {
 
 }
 
+std::vector<uint8_t> get_cached_file_data(const char* path) {
+    auto file = cmrc::cached_assets::get_filesystem().open(path);
+    std::vector<uint8_t> file_data(file.size());
+    std::copy(file.begin(), file.end(), file_data.data());
+    return file_data;
+}
+
 std::unique_ptr<GlComputeProgram> build_compute_program(const char* spv_path) {
     return std::make_unique<GlComputeProgram>(
         *build_shader(spv_path, GL_COMPUTE_SHADER)
@@ -38,15 +45,17 @@ std::unique_ptr<GlGraphicsProgram> build_graphics_program(const char* vs_spv_pat
     );
 }
 
-std::unique_ptr<GlTexture2D> read_texture(const char* path) {
-    auto file = cmrc::assets::get_filesystem().open(path);
-    std::vector<uint8_t> file_data(file.size());
-    std::copy(file.begin(), file.end(), file_data.data());
-
+std::unique_ptr<GlTexture2D> read_texture(const char* path, bool read_from_cache) {
     int num_channels;
     int width;
     int height;
-    auto img_data = stbi_load_from_memory(file_data.data(), file.size(), &width, &height, &num_channels, 0);
+    void* img_data;
+    if (read_from_cache) {
+        std::vector<uint8_t> file_data = get_cached_file_data(path);
+        img_data = stbi_load_from_memory(file_data.data(), file_data.size(), &width, &height, &num_channels, 0);
+    } else {
+        img_data = stbi_load(path, &width, &height, &num_channels, 0);
+    }
 
     std::unique_ptr<GlTexture2D> texture = create_texture_from_raw(img_data, num_channels, width, height);
 

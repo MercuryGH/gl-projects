@@ -13,10 +13,10 @@ endfunction()
 
 add_thirdparties()
 
-# assets
+# large assets are not cached
 
-file(GLOB_RECURSE ASSET_FILES ${CMAKE_SOURCE_DIR}/assets/*)
-cmrc_add_resource_library(assets ${ASSET_FILES})
+file(GLOB_RECURSE ASSET_FILES ${CMAKE_SOURCE_DIR}/assets/cached/*)
+cmrc_add_resource_library(cached_assets ${ASSET_FILES})
 
 # shaders
 

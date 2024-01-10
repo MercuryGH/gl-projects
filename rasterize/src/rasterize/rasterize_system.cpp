@@ -11,7 +11,6 @@ camera_data(camera_data), scene(width, height)
 	ui = std::make_unique<RasterizeSystemUI>(state);
 
 	display_program = build_graphics_program("display/display.vert.spv", "display/display.frag.spv");
-	// display_texture = read_texture()
 	glCreateVertexArrays(1, &empty_vao);
 }
 

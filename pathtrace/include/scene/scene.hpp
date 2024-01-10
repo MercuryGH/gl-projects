@@ -18,9 +18,9 @@ public:
     ~Scene();
     void clear();
 
-    void import_scene_file(const char* obj_file_path, const char* xml_file_path);
+    void import_scene_file(const char* obj_file_path, const char* mtl_file_path, const char* xml_file_path, bool read_from_cache=false);
 
-    void render();
+    void render(int spp);
 
     const renderer::GlTexture2D& get_display_texture();
     void write_result_to_texture(int spp);
@@ -28,7 +28,6 @@ public:
 
 private:
     Vector3 path_tracing(const Ray& ray, const IHittable& world);
-    Vector3 sample_light(Vector3 wo, const IHittable& world, const HitRecord& hit_record);
 
     std::vector<IHittable*> objects;
     IHittable* bvh_root{ nullptr };

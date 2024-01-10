@@ -38,7 +38,7 @@ ScalarType PhongMaterial::pdf_specular(Vector3 wi, Vector3 wo, Vector3 normal) c
         return 0;
     }
 
-    // phong ndf (not blinn-phong). Using reflctance but not half-way vector
+    // phong ndf (not blinn-phong). Using reflctance instead of half-way vector
     // ref: https://agraphicsguynotes.com/posts/sample_microfacet_brdf/
     return (phong_exponent + 1) * k_inv_2pi * std::pow(glm::dot(wi, w_reflect), phong_exponent);
 }
@@ -73,7 +73,7 @@ ScalarType PhongMaterial::pdf(Vector3 wi, Vector3 wo, const HitRecord& hit_recor
     }
 
     ScalarType diffuse_prob = glm::compMax(kd) / sum_prob;
-    ScalarType specular_prob = (1.0f - diffuse_prob);
+    ScalarType specular_prob = 1.0f - diffuse_prob;
 
     // MIS
     return diffuse_prob * pdf_diffuse(wi, wo, normal) + specular_prob * pdf_specular(wi, wo, normal);
@@ -96,8 +96,7 @@ Vector3 PhongMaterial::bxdf(Vector3 wi, Vector3 wo, const HitRecord& hit_record)
     return diffuse_term + specular_term;
 }
 
-// TODO: rename it to sample
-std::pair<Vector3, ScalarType> PhongMaterial::scatter(Vector3 wo, const HitRecord& hit_record) const {
+std::pair<Vector3, ScalarType> PhongMaterial::sample_wi(Vector3 wo, const HitRecord& hit_record) const {
     Vector3 normal = hit_record.normal;
     Vector3 kd = has_texture() ? texture->at(hit_record.uv) : diffuse;
     Vector3 ks = specular;
@@ -110,7 +109,7 @@ std::pair<Vector3, ScalarType> PhongMaterial::scatter(Vector3 wo, const HitRecor
     }
 
     ScalarType diffuse_prob = glm::compMax(kd) / sum_prob;
-    ScalarType specular_prob = (1.0f - diffuse_prob);
+    ScalarType specular_prob = 1.0f - diffuse_prob;
 
     // MIS
     ScalarType random_u = util::get_uniform_real_distribution(0.0f, 1.0f);

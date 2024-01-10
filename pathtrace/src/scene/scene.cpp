@@ -1,10 +1,13 @@
 #include <unordered_map>
 
-#include <omp.h>
-
 #include <glad/glad.h>
 
 #include <glh/model.hpp>
+#include <util/types.hpp>
+#include <util/math.hpp>
+#include <util/random.hpp>
+
+#include <glm/gtx/component_wise.hpp>
 
 #include <scene/scene.hpp>
 #include <material/glass_material.hpp>
@@ -15,7 +18,7 @@
 #include <scene/bvh.hpp>
 
 /**
- * maths based on https://raytracing.github.io/books/RayTracingTheRestOfYourLife.html
+ * maths based on https://raytracing.github.io/books/RayTracingTheRestOfYourLife.html and the book PBRT 
 */
 namespace pathtrace {
 
@@ -57,7 +60,7 @@ namespace {
     }
 
     // fetch material config
-    std::vector<IMaterial*> fetch_material_config(const renderer::ObjModel& model, const std::unordered_map<std::string, Vector3>& light_radiance_map) {
+    std::vector<IMaterial*> fetch_material_config(const renderer::ObjModel& model, const std::unordered_map<std::string, Vector3>& light_radiance_map, bool read_from_cache) {
         const int n_materials = model.materials().size();
         std::vector<IMaterial*> materials(n_materials);
 
@@ -82,7 +85,7 @@ namespace {
                 if (has_texture) {
                     // load texture
                     std::string obj_file_path = model.get_obj_file_path();
-                    std::vector<float> data = renderer::ObjModel::read_texture_rgbf((obj_file_path + texture_name).c_str());
+                    std::vector<float> data = renderer::ObjModel::read_texture_rgbf((obj_file_path + texture_name).c_str(), read_from_cache);
 
                     // texture can be shared
                     texture = std::make_shared<TextureRGBf>(data);
@@ -146,11 +149,11 @@ void Scene::clear() {
     materials.clear();
 }
 
-void Scene::import_scene_file(const char* obj_file_path, const char* xml_file_path) {
-    renderer::ObjModel obj_model(obj_file_path, xml_file_path);
+void Scene::import_scene_file(const char* obj_file_path, const char* mtl_file_path, const char* xml_file_path, bool read_from_cache) {
+    renderer::ObjModel obj_model(obj_file_path, mtl_file_path, xml_file_path, read_from_cache);
 
     auto light_config = fetch_light_config(obj_model.xml_document());
-    materials = fetch_material_config(obj_model, light_config);
+    materials = fetch_material_config(obj_model, light_config, read_from_cache);
 
     clear();
 
@@ -233,15 +236,103 @@ void Scene::import_scene_file(const char* obj_file_path, const char* xml_file_pa
     camera = setup_camera(obj_model.xml_document());
 }
 
-void Scene::render() {
+void Scene::render(int spp) {
+    if (bvh_root == nullptr) {
+        return;
+    }
+
+    buf.clear();
+
+    for (int cur_spp = 0; cur_spp < spp; cur_spp++) {
+        buf.foreach_pixel_parallel([&](int x, int y) {
+            Ray ray_cast = camera.cast_ray(x, y);
+            Vector3 color = path_tracing(ray_cast, *bvh_root);
+
+            // TODO: debug check
+            for (int i = 0; i < 3; i++) {
+                if (std::isfinite(color[i]) == false) {
+                    printf("Warning: INF in color result\n");
+                    assert(false);
+                }
+            }
+
+            buf.add_pixel_color(x, y, color);
+        });
+
+        // TODO: modify
+        if (cur_spp % 5 == 0) {
+            printf("cur_spp = %d\n", cur_spp);
+            write_result_to_texture(cur_spp);
+        }
+    }
+
+    write_result_to_texture(spp);
 }
 
-Vector3 Scene::path_tracing(const Ray& ray, const IHittable& world) {
-    return { 0, 0, 0 };
-}
+Vector3 Scene::path_tracing(const Ray& init_ray, const IHittable& world) {
+    Vector3 color{ 0, 0, 0 };
+    Vector3 throughput{ 1.0f, 1.0f, 1.0f };
 
-Vector3 Scene::sample_light(Vector3 wo, const IHittable& world, const HitRecord& hit_record) {
-    return { 0, 0, 0 };
+    constexpr int k_max_bounces = 10;
+
+    HitRecord hit_record;
+    bool light_source_in_camera = true; // view the light source directly
+    Ray cur_ray = init_ray;
+    for (int bounce_cnt = 0; bounce_cnt < k_max_bounces; bounce_cnt++) { 
+        if (world.hit(cur_ray, Vector2{ k_eps, k_max }, hit_record) == false)  {
+            break;
+        }
+
+        Vector3 wo = -cur_ray.dir;
+
+        ScalarType wo_normal_cosine = glm::dot(hit_record.normal, wo);
+        // hit a light source, special case
+        if (hit_record.material->get_type() == MaterialType::eEmissive) {
+            if (light_source_in_camera && wo_normal_cosine > 0) {
+                color += throughput * hit_record.material->light_emitted();
+            }
+            break;
+        }
+
+        // TODO: debug only
+        if (wo_normal_cosine < 0) {
+            printf("Warning: bad cosine angle\n");
+        }
+
+        // inverse normal if needed
+        hit_record.normal = wo_normal_cosine > 0 ? hit_record.normal : -hit_record.normal;
+        auto [wi, pdf] = hit_record.material->sample_wi(wo, hit_record);
+
+        // hit a glass, treat it as a special case
+        if (hit_record.material->get_type() == MaterialType::eGlass) {
+            throughput *= hit_record.material->bxdf(wi, wo, hit_record);
+            cur_ray = Ray{ .origin = hit_record.pos, .dir = wi };
+            continue;
+        } 
+
+        light_source_in_camera = false;
+
+        color += throughput * area_lights.sample_light(wo, world, hit_record);
+        ScalarType wi_normal_cosine = glm::dot(hit_record.normal, wi);
+        if (wi_normal_cosine > 0 && pdf > 0) {
+            throughput *= hit_record.material->bxdf(wi, wo, hit_record) * wi_normal_cosine / pdf;
+            cur_ray = Ray{ .origin = hit_record.pos, .dir = wi };
+        } else {
+            // cannot bounce
+            break;
+        }
+
+        // TODO: add a bounce threshold for rr
+        // Russian Roulette
+        ScalarType p = glm::compMax(throughput);
+        ScalarType russian_roulette = util::get_uniform_real_distribution(0.0f, 1.0f);
+        if (russian_roulette > p) {
+            break;
+        }
+        throughput /= p;
+    }
+
+    return color;
 }
 
 const renderer::GlTexture2D& Scene::get_display_texture() {
@@ -251,7 +342,7 @@ const renderer::GlTexture2D& Scene::get_display_texture() {
 void Scene::write_result_to_texture(int spp) {
     std::vector<uint8_t> raw_data(buf.get_n_pixels() * 4);
 
-    buf.foreach_pixel([&](int x, int y) {
+    buf.foreach_pixel_parallel([&](int x, int y) {
         const int idx = buf.get_pixel_idx(x, y);
         Vector3 color = buf.get_pixel(x, y);
         color /= (float)(spp);
