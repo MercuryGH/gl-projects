@@ -11,8 +11,7 @@ bool BvhNode::hit(const Ray& ray, Vector2 t_range, HitRecord& hit_record) const 
     ScalarType t_hit[k_n_children];
     bool hit[k_n_children];
     for (int i = 0; i < k_n_children; i++) {
-        BoundingBox child_bb;
-        get_child(i)->get_bounding_box(child_bb);
+        BoundingBox child_bb = get_child(i)->get_bounding_box();
 
         // test AABB
         HitRecord tmp_record;
@@ -52,8 +51,8 @@ bool BvhNode::hit(const Ray& ray, Vector2 t_range, HitRecord& hit_record) const 
     return false;
 }
 
-void BvhNode::get_bounding_box(BoundingBox &ret_bb) const {
-    ret_bb = bbox;
+BoundingBox BvhNode::get_bounding_box() const {
+    return bbox;
 }
 
 }

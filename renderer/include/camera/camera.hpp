@@ -10,40 +10,53 @@ namespace renderer {
 
 struct CameraData {
 	glm::vec3 pos;
-	glm::vec3 look_at;
+	glm::vec3 lookat;
+	glm::vec3 up;
 	float aspect;
 	float fov_deg;
-	float theta;
-	float phi;
-	float radius;
+
+	// cached
 	glm::mat4 proj;
 	glm::mat4 proj_inv;
 	glm::mat4 view;
 	glm::mat4 view_inv;
 };
 
-class OrbitCamera {
+struct ShaderCamera {
+	glm::mat4 view;
+	glm::mat4 proj;
+	glm::mat4 view_inv;
+};
+
+class Camera {
 public:
-	OrbitCamera(const glm::vec3& look_at, float radius, float aspect, float fov_deg=45.0f);
+	Camera() {}
+	Camera(glm::vec3 pos, glm::vec3 lookat, glm::vec3 up, float aspect, float fov_deg=45.0f);
 
 	glm::vec3 position() const { return data.pos; }
+	glm::vec3 lookat() const { return data.lookat; }
+	float aspect() const { return data.aspect; }
+	float fov_deg() const { return data.fov_deg; }
 	glm::mat4 proj_mat() const { return data.proj; }
 	glm::mat4 proj_inv_mat() const { return data.proj_inv; }
 	glm::mat4 view_mat() const { return data.view; }
 	glm::mat4 view_inv_mat() const { return data.view_inv; }
 	CameraData& camera_data() { return data; }
 
-	void rotate(float delta_x, float delta_y);
-	void forward(float delta);
-
 	void set_aspect(float aspect);
-	void set_angle(float theta_deg, float phi_deg);
 	void set_fov(float fov_deg);
 
 	const GlBuffer* get_buffer();
 
-private:
-	void update();
+	constexpr static float k_z_near = 0.001f;
+	constexpr static float k_z_far = 100000.0f;
+
+	/* handle user input */
+	virtual void window_mouse_callback(uint32_t state, float x, float y, float last_x, float last_y) {}
+	virtual void window_scroll_callback(float xoffset, float yoffset) {}
+
+protected:
+	virtual void update() {}
 
 	CameraData data;
 

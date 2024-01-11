@@ -56,8 +56,16 @@ void GlBuffer::unmap() {
 	}
 }
 
-GlTexture2D::GlTexture2D(uint32_t format, uint32_t width, uint32_t height, uint32_t levels)
-	: width(width), height(height), levels(levels), format(format) {
+GlTexture2D::GlTexture2D(uint32_t format, uint32_t width, uint32_t height, uint32_t levels) {
+	init(format, width, height, levels);
+}
+
+void GlTexture2D::init(uint32_t format, uint32_t width, uint32_t height, uint32_t levels) {
+	this->width = width;
+	this->height = height;
+	this->levels = levels;
+	this->format = format;
+
 	if (levels == 0) {
 		uint32_t temp_width = width;
 		uint32_t temp_height = height;

@@ -16,6 +16,7 @@ private:
     bool import_scene_from_disk{ false };
     bool draw_dirty{ true };
     bool scene_dirty{ true };
+    bool camera_dirty{ true };
 
     void draw_ui();
 };

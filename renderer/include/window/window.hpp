@@ -7,6 +7,7 @@
 #include <imgui.h>
 
 #include <window/screen_capturer.hpp>
+#include <unordered_set>
 
 // yay -S nvidia nvidia-utils lib32-nvidia-utils
 
@@ -21,6 +22,8 @@ public:
 	float get_aspect() const { return static_cast<float>(width) / height; }
 
 	void main_loop(const std::function<void()>& func);
+
+	void process_input();
 
 	using MouseCallback = std::function<void(uint32_t, float, float, float, float)>;
 	enum Mouse {
@@ -42,6 +45,8 @@ public:
 	void set_title(const char* title);
 
 	ScreenCapturer& get_screen_capturer() { return screen_capturer; }
+
+	bool key_pressed(int key) const { return pressed_key.find(key) != pressed_key.end(); }
 
 private:
 	friend void glfw_cursor_pos_callback(GLFWwindow* window, double x, double y);
@@ -67,6 +72,8 @@ private:
 	std::unordered_map<float, ImFont*> imgui_cached_fonts;
 	ImFont* imgui_curr_font = nullptr;
 	float imgui_last_scale = 1.0f;
+
+	std::unordered_set<int> pressed_key; // all pressed key in 1 frame
 
 	ScreenCapturer screen_capturer;
 };

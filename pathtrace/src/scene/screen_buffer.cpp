@@ -8,6 +8,12 @@ ScreenBuffer::ScreenBuffer(int width, int height): width(width), height(height) 
     clear();
 }
 
+void ScreenBuffer::set_size(int width, int height) {
+    this->width = width;
+    this->height = height;
+    clear();
+}
+
 void ScreenBuffer::clear() {
     colors = std::vector<Vector3>(width * height);
     for (int i = 0; i < colors.size(); i++) {

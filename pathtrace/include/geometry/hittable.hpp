@@ -11,7 +11,7 @@ struct BoundingBox;
 class IHittable {
 public:
     virtual bool hit(const Ray& ray, Vector2 t_range, HitRecord& hit_record) const = 0;
-    virtual void get_bounding_box(BoundingBox &ret_bb) const = 0;
+    virtual BoundingBox get_bounding_box() const = 0;
 };
 
 }

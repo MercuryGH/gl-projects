@@ -5,11 +5,11 @@ int main(int argc, char** argv) {
 	using namespace renderer;
 	using namespace pathtrace;
 
-	const uint32_t k_width = 800;
-	const uint32_t k_height = 800;
+	const uint32_t k_width = 1200;
+	const uint32_t k_height = 1200;
 	Window window(k_width, k_height, "path tracer");
 
-	PathtraceSystem pathtrace_system(k_width, k_height);
+	PathtraceSystem pathtrace_system;
 
 	window.set_resize_callback([&](uint32_t width, uint32_t height) {
 	});

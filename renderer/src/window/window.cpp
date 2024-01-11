@@ -166,8 +166,31 @@ Window::~Window() {
 	glfwTerminate();
 }
 
+void Window::process_input() {
+	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+		glfwSetWindowShouldClose(window, true);
+	}
+
+	pressed_key.clear();
+
+	const auto check_key_pressed = [&](int key) {
+		if (glfwGetKey(window, key) == GLFW_PRESS) {
+			pressed_key.emplace(key);
+		}
+	};
+	check_key_pressed(GLFW_KEY_W);
+	check_key_pressed(GLFW_KEY_S);
+	check_key_pressed(GLFW_KEY_A);
+	check_key_pressed(GLFW_KEY_D);
+	check_key_pressed(GLFW_KEY_SPACE);
+	check_key_pressed(GLFW_KEY_LEFT_CONTROL);
+	check_key_pressed(GLFW_KEY_LEFT_SHIFT);
+}
+
 void Window::main_loop(const std::function<void()>& callback) {
 	while (!glfwWindowShouldClose(window)) {
+		process_input();
+
 		glfwPollEvents();
 
 		// const int k_miku_green[3] = { 0x39, 0xc5, 0xbb };

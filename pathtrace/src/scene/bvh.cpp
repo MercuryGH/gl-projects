@@ -11,9 +11,8 @@ namespace {
     // sort by bb's centroid[dim_idx]
     template<int dim_idx>
     bool cmp(IHittable* a, IHittable* b) {
-        BoundingBox a_bb, b_bb;
-        a->get_bounding_box(a_bb);
-        b->get_bounding_box(b_bb);
+        BoundingBox a_bb = a->get_bounding_box();
+        BoundingBox b_bb = b->get_bounding_box();
 
         return a_bb.centroid()[dim_idx] < b_bb.centroid()[dim_idx];
     }
@@ -36,13 +35,12 @@ namespace {
         BvhNode* node = new BvhNode();
         BoundingBox centroid_bb;
         for (int i = start_index; i < end_index; i++) {
-            BoundingBox obj_bb;
-            objects.at(i)->get_bounding_box(obj_bb);
+            BoundingBox obj_bb = objects.at(i)->get_bounding_box();
 
             // set current bvh bb
-            BoundingBox node_bb;
-            node->get_bounding_box(node_bb);
+            BoundingBox node_bb = node->get_bounding_box();
 
+            // TODO: set node bb
             node_bb.merge(obj_bb);
             centroid_bb.merge(obj_bb.centroid());
         }
@@ -52,7 +50,7 @@ namespace {
             : max_extent_dim == 1 ? cmp<1>
             : cmp<2>;
 
-        std::sort(objects.begin() + start_index, objects.end() + end_index, cmp_dim);
+        std::sort(objects.begin() + start_index, objects.begin() + end_index, cmp_dim);
 
         int mid_index = (start_index + end_index) / 2;
 
@@ -76,7 +74,7 @@ void clear_bvh(IHittable* root) {
 
     clear_bvh(non_leaf_node->get_child(0));
     clear_bvh(non_leaf_node->get_child(1));
-    delete root;
+    delete non_leaf_node;
 }
 
 }

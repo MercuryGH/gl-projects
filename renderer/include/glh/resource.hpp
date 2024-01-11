@@ -6,7 +6,7 @@ namespace renderer {
 
 class GlBuffer {
 public:
-	GlBuffer(uint64_t size, uint32_t usage = 0, const void* data = nullptr);
+	GlBuffer(uint64_t size, uint32_t usage=0, const void* data=nullptr);
 	~GlBuffer();
 
 	uint32_t id() const { return gl_buffer; }
@@ -29,8 +29,11 @@ private:
 class GlTexture2D {
 public:
 	// if level = 0, generate log_2(min(width, height)) mipmaps
-	GlTexture2D(uint32_t format, uint32_t width, uint32_t height, uint32_t levels = 0);
+	GlTexture2D() {}
+	GlTexture2D(uint32_t format, uint32_t width, uint32_t height, uint32_t levels=0);
 	~GlTexture2D();
+
+	void init(uint32_t format, uint32_t width, uint32_t height, uint32_t levels=0);
 
 	uint32_t id() const { return gl_texture; }
 

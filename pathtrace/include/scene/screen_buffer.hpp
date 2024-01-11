@@ -9,8 +9,11 @@ namespace pathtrace {
 
 class ScreenBuffer {
 public:
+    ScreenBuffer() {}
     ScreenBuffer(int width, int height);
     void clear();
+
+    void set_size(int width, int height);
 
     int get_n_pixels() const { return width * height; }
     int get_pixel_idx(int x, int y) const { return y * width + x; }

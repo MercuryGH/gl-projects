@@ -76,12 +76,13 @@ Vector3 AreaLightGroup::sample_light(Vector3 wo, const IHittable& world, const H
         ScalarType bxdf_pdf = surface_material->pdf(light_wi, wo, hit_record);
         if (bxdf_pdf > 0) {
             Vector3 bxdf = surface_material->bxdf(light_wi, wo, hit_record);
-
-            assert(light_record.material->get_type() == eEmissive); // TODO: debug only
-
             ScalarType weight = power_heuristic(light_pdf, bxdf_pdf);
             ScalarType wi_normal_cosine = glm::dot(light_wi, hit_record.normal);
             Vector3 emissive = light_record.material->light_emitted();
+
+            if (emissive == Vector3{ 0, 0, 0 }) {
+                assert(false);
+            }
 
             color += bxdf * wi_normal_cosine * weight * emissive / light_pdf;
         }
@@ -94,12 +95,13 @@ Vector3 AreaLightGroup::sample_light(Vector3 wo, const IHittable& world, const H
         ScalarType light_pdf = pdf(wi_ray, world, light_record);
         if (light_pdf > 0) {
             Vector3 bxdf = surface_material->bxdf(bxdf_wi, wo, hit_record);
-
-            assert(light_record.material->get_type() == eEmissive);
-
             ScalarType weight = power_heuristic(bxdf_pdf, light_pdf);
             ScalarType wi_normal_cosine = glm::dot(bxdf_wi, hit_record.normal);
             Vector3 emissive = light_record.material->light_emitted();
+
+            if (emissive == Vector3{ 0, 0, 0 }) {
+                assert(false);
+            }
 
             color += bxdf * wi_normal_cosine * weight * emissive / light_pdf;
         }

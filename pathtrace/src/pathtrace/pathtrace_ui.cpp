@@ -2,7 +2,7 @@
 
 #include <imgui.h>
 
-#include <glh/file_system.hpp>
+#include <glh/file_io.hpp>
 
 namespace pathtrace {
 
@@ -19,7 +19,6 @@ void PathtraceSystemUI::draw_ui() {
 		// select cached scene
 		ImGui::Text("Select a cached scene:");
 		const char* instances[] = {
-			"None (use customized scene)",
 			"Classic Cornell Box",
 			"Modified Cornell Box",
 		};
@@ -29,9 +28,9 @@ void PathtraceSystemUI::draw_ui() {
 
 		ImGui::Text("OR, open a scene folder:");
 
-		ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(0, 0.6, 0.2));
-		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(0, 0.7, 0.3));
-		ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(0, 0.8, 0.3));
+		ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(0.5, 0.6, 0.6));
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(0.5, 0.7, 0.7));
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(0.5, 0.8, 0.8));
 		if (ImGui::Button("Open scene folder", ImVec2(-1, 0))) {
 			const char* path = renderer::select_dir();
 			if (path != nullptr) {
@@ -43,9 +42,15 @@ void PathtraceSystemUI::draw_ui() {
 
 		scene_dirty |= ImGui::Button("Load scene", ImVec2(-1, 0));
 
+		ImGui::Text("Last render time: %.2lf ms", state.last_import_time);
+
 		ImGui::Text("#Tri: %d", state.n_triangles);
 
 		ImGui::Separator();
+		// camera
+
+		ImGui::Separator();
+		// path tracing
 
 		ImGui::InputInt("#spp", &state.spp);
 

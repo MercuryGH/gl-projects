@@ -5,7 +5,7 @@
 
 namespace pathtrace {
 
-PathtraceSystem::PathtraceSystem(uint32_t width, uint32_t height): scene(width, height)
+PathtraceSystem::PathtraceSystem()
 {
     ui = std::make_unique<PathtraceSystemUI>(state);
 
@@ -21,40 +21,40 @@ PathtraceSystem::~PathtraceSystem()
 void PathtraceSystem::update(float delta_time)
 {
     ui->update(delta_time);
-    std::string ret = state.get_file_path("123", "456");
-    printf("%s\n", ret.c_str());
-    return;
 
     if (ui->scene_dirty) {
-        bool read_from_cache = !(ui->import_scene_from_disk && state.cur_scene_id == 0);
+        bool read_from_cache = !(ui->import_scene_from_disk);
 
-        // if () {
-        //     const char* path = state.last_import_scene_path_from_disk;
-        //     ui->import_scene_from_disk = false;
+        std::string parent_dir;
+        if (read_from_cache) {
+            parent_dir = "assets/cached/scene/";
+            parent_dir += std::string(state.cur_scene_name());
+        } else {
+            parent_dir = state.last_import_scene_path_from_disk;
+        }
 
-        // } else {
-        //     // import from cache
-        //     std::string obj_file_path = state.cached_scene_file_path(".obj");
-        //     std::string mtl_file_path = state.cached_scene_file_path(".mtl");
-        //     std::string xml_file_path = state.cached_scene_file_path(".xml");
-        // }
+        std::string obj_file_path = state.get_file_path(parent_dir, ".obj");
+        std::string mtl_file_path = state.get_file_path(parent_dir, ".mtl");
+        std::string xml_file_path = state.get_file_path(parent_dir, ".xml");
 
-        // scene.import_scene_file(obj_file_path.c_str(), mtl_file_path.c_str(), xml_file_path.c_str(), read_from_cache);
+        timer.start();
 
+        scene.import_scene_file(obj_file_path.c_str(), mtl_file_path.c_str(), xml_file_path.c_str(), read_from_cache);
+
+        timer.stop();
+        state.last_import_time = timer.elapsed_milliseconds();
+
+        ui->import_scene_from_disk = false;
         ui->scene_dirty = false;
     }
 
     if (ui->draw_dirty) {
-        // re-pathtrace scene
-
         timer.start();
 
         scene.render(state.spp);
 
         timer.stop();
         state.last_render_time = timer.elapsed_milliseconds();
-
-        // scene.write_result_to_texture();
 
         ui->draw_dirty = false;
     }

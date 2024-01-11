@@ -1,6 +1,7 @@
 #pragma once
 
 #include <geometry/triangle.hpp>
+#include <geometry/bounding_box.hpp>
 #include <light/area_light.hpp>
 
 namespace pathtrace {
@@ -19,8 +20,8 @@ public:
     bool hit(const Ray& ray, Vector2 t_range, HitRecord& hit_record) const override {
         return tri.hit(ray, t_range, hit_record);
     }
-    void get_bounding_box(BoundingBox &ret_bb) const override {
-        tri.get_bounding_box(ret_bb);
+    BoundingBox get_bounding_box() const override {
+        return tri.get_bounding_box();
     }
 
     Vector3 uniform_sample_point() const override;

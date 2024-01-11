@@ -8,7 +8,6 @@ namespace fs = std::filesystem;
 namespace pathtrace {
 
 namespace {
-    const char* scene_dir = "scene/";
     const char* scene_names[] = {
         "classic-cornell-box",
         "cornell-box",
@@ -23,15 +22,12 @@ class PathtraceSystemState {
         return scene_names[cur_scene_id];
     }
 
-    std::string get_file_path(std::string parent_dir_str, std::string postfix) const {
-        // std::string scene_name = std::string(cur_scene_name());
+    std::string get_file_path(std::string scene_dir_str, std::string postfix) const {
+        fs::path parent_dir(scene_dir_str);
+        std::string scene_name = parent_dir.filename().generic_string();
+        fs::path file_name = scene_name + postfix;
 
-        fs::path file(scene_names[0]);
-        fs::path parent_dir("scene");
-        fs::path full_path = parent_dir / file;
-
-        // path string contains utf-8 chars
-        // std::u8string path_str(full_path.u8string());
+        fs::path full_path = parent_dir / file_name;
 
         // assume path string is simple
         std::string path_str = full_path.generic_string();
@@ -43,8 +39,9 @@ private:
     int cur_scene_id{ 0 }; // selectd cached scene
     const char* last_import_scene_path_from_disk{ nullptr };
 
-    int spp{ 20 }; // #sample per pixel
+    int spp{ 5 }; // #sample per pixel
 
+    double last_import_time{ 0 };
     double last_render_time{ 0 };
     int n_triangles{ 0 };
 };

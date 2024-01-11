@@ -6,8 +6,7 @@ namespace pathtrace {
 
 enum MaterialType {
     ePhong,
-    eGlass,
-    eEmissive
+    eGlass
 };
 
 struct HitRecord;

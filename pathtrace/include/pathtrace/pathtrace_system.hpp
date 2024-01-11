@@ -19,7 +19,7 @@ namespace pathtrace {
 
 class PathtraceSystem {
 public:
-	PathtraceSystem(uint32_t width, uint32_t height);
+	PathtraceSystem();
 	~PathtraceSystem();
 
 	void update(float delta_time);

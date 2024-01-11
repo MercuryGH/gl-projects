@@ -1,5 +1,5 @@
 #include <window/window.hpp>
-#include <camera/camera.hpp>
+#include <camera/orbit_camera.hpp>
 
 int main(int argc, char** argv) {
 	using namespace renderer;

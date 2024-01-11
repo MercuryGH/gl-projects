@@ -126,8 +126,8 @@ bool BoundingBox::hit(const Ray& ray, Vector2 t_range, HitRecord& hit_record) co
     return true;
 }
 
-void BoundingBox::get_bounding_box(BoundingBox &ret_bb) const {
-    ret_bb = BoundingBox(*this);
+BoundingBox BoundingBox::get_bounding_box() const {
+    return *this;
 }
 
 }

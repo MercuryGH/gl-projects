@@ -14,9 +14,11 @@ namespace pathtrace {
 
 class Scene {
 public:
+    Scene() {}
     Scene(uint32_t width, uint32_t height);
     ~Scene();
     void clear();
+    void set_size(uint32_t width, uint32_t height);
 
     void import_scene_file(const char* obj_file_path, const char* mtl_file_path, const char* xml_file_path, bool read_from_cache=false);
 

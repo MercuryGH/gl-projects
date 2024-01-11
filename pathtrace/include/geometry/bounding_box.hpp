@@ -30,7 +30,7 @@ public:
     bool contains(const BoundingBox& rhs) const;
 
     bool hit(const Ray& ray, Vector2 t_range, HitRecord& hit_record) const override;
-    void get_bounding_box(BoundingBox &ret_bb) const override;
+    BoundingBox get_bounding_box() const override;
 
 private:
     Vector3 pmin, pmax;

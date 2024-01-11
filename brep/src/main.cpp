@@ -1,5 +1,6 @@
 #include <window/window.hpp>
-#include <camera/camera.hpp>
+#include <camera/orbit_camera.hpp>
+#include <camera/first_person_camera.hpp>
 #include <brep/brep_system.hpp>
 
 int main(int argc, char** argv) {
@@ -10,38 +11,73 @@ int main(int argc, char** argv) {
 	const uint32_t k_height = 600;
 	Window window(k_width, k_height, "brep");
 
-	OrbitCamera camera(Vector3(0.0f), 10.0f, window.get_aspect());
-	BrepSystem brep_system{};
+	std::unique_ptr<OrbitCamera> oc = std::make_unique<OrbitCamera>(Vector3(0.0f), 10.0f, window.get_aspect());
+	std::unique_ptr<FirstPersonCamera> fpc = nullptr;
+	Camera& camera = oc.get();
 
-	brep_system.set_camera_buffer(camera.get_buffer());
+	BrepSystem brep_system{};
+	brep_system.set_camera_buffer(camera->get_buffer());
 
 	window.set_resize_callback([&](uint32_t width, uint32_t height) {
-		camera.set_aspect(window.get_aspect());
+		camera->set_aspect(window.get_aspect());
 	});
 
 	window.set_mouse_callback([&](uint32_t state, float x, float y, float last_x, float last_y) {
-		// LMC
-		if ((state & Window::eMouseLeft) != 0) {
-			float dx = glm::radians(0.25f * (x - last_x));
-			float dy = glm::radians(0.25f * (y - last_y));
-			camera.rotate(-dx, -dy);
-		}
-		brep_system.set_camera_buffer(camera.get_buffer());
+		camera->window_mouse_callback(state, x, y, last_x, last_y);
+		brep_system.set_camera_buffer(camera->get_buffer());
 	});
 
 	window.set_scroll_callback([&](float xoffset, float yoffset) {
-		// mouse middel scroll
-		camera.forward(-0.5f * yoffset);
-		brep_system.set_camera_buffer(camera.get_buffer());
+		camera->window_scroll_callback(xoffset, yoffset);
+		brep_system.set_camera_buffer(camera->get_buffer());
 	});
 
 	window.main_loop([&]() {
 		brep_system.update(ImGui::GetIO().DeltaTime);
 		window.get_screen_capturer().update(); // update screen capturer after rendering, before ImGui calling
 
+		float fps = ImGui::GetIO().Framerate;
+		float delta_t = 1.0f / fps;
+
 		if (ImGui::Begin("Statistics")) {
-			float fps = ImGui::GetIO().Framerate;
-			ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / fps, fps);
+			ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f * delta_t, fps);
+
+			static bool use_fpc = false;
+			ImGui::Checkbox("first person camera", &use_fpc);
+			if (use_fpc) {
+				if (fpc == nullptr) {
+					fpc = std::make_unique<FirstPersonCamera>(*oc);
+				}
+				camera = fpc.get();
+			} else {
+				fpc = nullptr;
+				camera = oc.get();
+			}
+
+			// tick FPCamera
+			if (use_fpc) {
+				fpc->enable_sprint(window.key_pressed(GLFW_KEY_LEFT_SHIFT));
+
+				if (window.key_pressed(GLFW_KEY_W)) {
+					fpc->move(CameraMoveDirection::eForward, delta_t);
+				} 
+				if (window.key_pressed(GLFW_KEY_S)) {
+					fpc->move(CameraMoveDirection::eBackward, delta_t);
+				}
+				if (window.key_pressed(GLFW_KEY_A)) {
+					fpc->move(CameraMoveDirection::eLeft, delta_t);
+				} 
+				if (window.key_pressed(GLFW_KEY_D)) {
+					fpc->move(CameraMoveDirection::eRight, delta_t);
+				} 
+				if (window.key_pressed(GLFW_KEY_SPACE)) {
+					fpc->move(CameraMoveDirection::eUp, delta_t);
+				} 
+				if (window.key_pressed(GLFW_KEY_LEFT_CONTROL)) {
+					fpc->move(CameraMoveDirection::eDown, delta_t);
+				} 
+			}
+			brep_system.set_camera_buffer(camera->get_buffer());
 
 			if (ImGui::Button("Capture current frame", ImVec2(-1, 0))) {
 				std::string capture_path = "./";

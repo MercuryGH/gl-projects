@@ -24,18 +24,20 @@ namespace pathtrace {
 
 namespace {
 
-    Vector3 read_3_floats(const char* text) {
+    Vector3 read_comma_separated_vector3(const tinyxml2::XMLElement* xml_element, const char* name) {
+        const char* val = xml_element->Attribute(name);
         Vector3 ret;
-        int float_read = sscanf(text, "%f,%f,%f", &ret[0], &ret[1], &ret[2]);
+        int float_read = sscanf(val, "%f,%f,%f", &ret[0], &ret[1], &ret[2]);
         assert(float_read == 3);
         return ret;
     }
 
-    float read_float(const char* text) {
-        float ret;
-        int float_read = sscanf(text, "%f", &ret);
-        assert(float_read == 1);
-        return ret;
+    Vector3 read_vector3(const tinyxml2::XMLElement* xml_element) {
+        return {
+            std::atof(xml_element->Attribute("x")),
+            std::atof(xml_element->Attribute("y")),
+            std::atof(xml_element->Attribute("z")),
+        };
     }
 
     std::unordered_map<std::string, Vector3> fetch_light_config(const tinyxml2::XMLDocument& xml_doc) {
@@ -47,11 +49,7 @@ namespace {
                 printf("Warning: no attribute in light node\n");
             }
 
-            const char* radiance_str = light_node->Attribute("radiance");
-            if (radiance_str == nullptr) {
-                printf("Warning: no radiance in light node\n");
-            }
-            Vector3 radiance = read_3_floats(radiance_str);
+            Vector3 radiance = read_comma_separated_vector3(light_node, "radiance");
 
             light_radiance_map.emplace(std::string(mtl_name), radiance);
         }
@@ -106,12 +104,13 @@ namespace {
             assert(false);
         }
 
-        Vector3 eye = read_3_floats(camera_node->FirstChildElement("eye")->Attribute("value"));
-        Vector3 lookat = read_3_floats(camera_node->FirstChildElement("lookat")->Attribute("value"));
-        Vector3 up = read_3_floats(camera_node->FirstChildElement("up")->Attribute("value"));
-        ScalarType fovy = read_float(camera_node->FirstChildElement("fovy")->Attribute("value"));
-        ScalarType width = read_float(camera_node->FirstChildElement("width")->Attribute("value"));
-        ScalarType height = read_float(camera_node->FirstChildElement("height")->Attribute("value"));
+        ScalarType width = std::atoi(camera_node->Attribute("width"));
+        ScalarType height = std::atoi(camera_node->Attribute("height"));
+        ScalarType fovy = std::atoi(camera_node->Attribute("fovy"));
+
+        Vector3 eye = read_vector3(camera_node->FirstChildElement("eye"));
+        Vector3 lookat = read_vector3(camera_node->FirstChildElement("lookat"));
+        Vector3 up = read_vector3(camera_node->FirstChildElement("up"));
 
         auto pinhole_camera = PinholeCamera {
             .eye = eye,
@@ -139,6 +138,7 @@ Scene::~Scene() {
 
 void Scene::clear() {
     clear_bvh(bvh_root);
+    bvh_root = nullptr;
     for (auto object : objects) {
         delete object;
     }
@@ -149,13 +149,21 @@ void Scene::clear() {
     materials.clear();
 }
 
+void Scene::set_size(uint32_t width, uint32_t height) {
+    display_texture.init(GL_RGBA8, width, height);
+    buf.set_size(width, height);
+}
+
 void Scene::import_scene_file(const char* obj_file_path, const char* mtl_file_path, const char* xml_file_path, bool read_from_cache) {
+    clear();
+
     renderer::ObjModel obj_model(obj_file_path, mtl_file_path, xml_file_path, read_from_cache);
+
+    camera = setup_camera(obj_model.xml_document());
+    set_size(camera.width, camera.height);
 
     auto light_config = fetch_light_config(obj_model.xml_document());
     materials = fetch_material_config(obj_model, light_config, read_from_cache);
-
-    clear();
 
     std::vector<IAreaLight*> area_light_list;
 
@@ -165,7 +173,6 @@ void Scene::import_scene_file(const char* obj_file_path, const char* mtl_file_pa
         int vertex_idx_offset = 0;
 
         const int n_tris = shape.mesh.num_face_vertices.size();
-        objects.resize(n_tris);
 
         // foreach triangle
         for (int tri_idx = 0; tri_idx < n_tris; tri_idx++) {
@@ -218,10 +225,10 @@ void Scene::import_scene_file(const char* obj_file_path, const char* mtl_file_pa
 
             int material_id = shape.mesh.material_ids.at(tri_idx);
             triangle->set_material(materials.at(material_id));
-            objects.at(tri_idx) = triangle;
+            objects.push_back(triangle);
 
             // area light object
-            if (triangle->get_material()->get_type() == MaterialType::eEmissive) {
+            if (triangle->get_material()->light_emitted() != Vector3{ 0, 0, 0 }) {
                 TriangularAreaLight* tal = new TriangularAreaLight(*triangle);
                 area_light_list.push_back(tal);
             }
@@ -232,8 +239,6 @@ void Scene::import_scene_file(const char* obj_file_path, const char* mtl_file_pa
 
     std::vector<IHittable*> objects_shallow_copy = objects;
     bvh_root = build_bvh(objects_shallow_copy);
-
-    camera = setup_camera(obj_model.xml_document());
 }
 
 void Scene::render(int spp) {
@@ -243,7 +248,7 @@ void Scene::render(int spp) {
 
     buf.clear();
 
-    for (int cur_spp = 0; cur_spp < spp; cur_spp++) {
+    for (int cur_spp = 1; cur_spp <= spp; cur_spp++) {
         buf.foreach_pixel_parallel([&](int x, int y) {
             Ray ray_cast = camera.cast_ray(x, y);
             Vector3 color = path_tracing(ray_cast, *bvh_root);
@@ -259,7 +264,7 @@ void Scene::render(int spp) {
             buf.add_pixel_color(x, y, color);
         });
 
-        // TODO: modify
+        // TODO: modify to thread and ui
         if (cur_spp % 5 == 0) {
             printf("cur_spp = %d\n", cur_spp);
             write_result_to_texture(cur_spp);
@@ -287,7 +292,7 @@ Vector3 Scene::path_tracing(const Ray& init_ray, const IHittable& world) {
 
         ScalarType wo_normal_cosine = glm::dot(hit_record.normal, wo);
         // hit a light source, special case
-        if (hit_record.material->get_type() == MaterialType::eEmissive) {
+        if (hit_record.material->light_emitted() != Vector3{ 0, 0, 0 }) {
             if (light_source_in_camera && wo_normal_cosine > 0) {
                 color += throughput * hit_record.material->light_emitted();
             }
