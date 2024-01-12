@@ -44,6 +44,9 @@ private:
     double last_import_time{ 0 };
     double last_render_time{ 0 };
     int n_triangles{ 0 };
+
+    bool is_rendering{ false };
+    float spp_progress{ 0 };
 };
 
 }

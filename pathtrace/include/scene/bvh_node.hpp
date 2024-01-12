@@ -18,6 +18,7 @@ public:
 
     bool hit(const Ray& ray, Vector2 t_range, HitRecord& hit_record) const override;
     BoundingBox get_bounding_box() const override;
+    void merge_bounding_box(BoundingBox bb) { bbox.merge(bb); }
 
     void set_child(int index, IHittable* node) { children[index] = node; }
     IHittable* get_child(int index) const { return children[index]; }

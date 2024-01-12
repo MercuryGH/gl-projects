@@ -54,11 +54,18 @@ void PathtraceSystemUI::draw_ui() {
 
 		ImGui::InputInt("#spp", &state.spp);
 
+		ImGui::BeginDisabled(state.is_rendering);
+
 		ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(0, 0.6, 0.6));
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(0, 0.7, 0.7));
 		ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(0, 0.8, 0.8));
 		draw_dirty |= ImGui::Button("Render", ImVec2(-1, 0));
 		ImGui::PopStyleColor(3);
+
+		ImGui::EndDisabled();
+		if (state.is_rendering) {
+			ImGui::ProgressBar(state.spp_progress, ImVec2(-1, 0));
+		}
 
 		ImGui::Text("Last render time: %.2lf ms", state.last_render_time);
 	}

@@ -15,8 +15,8 @@ void BoundingBox::make_empty() {
     pmax = Vector3(k_min, k_min, k_min);
 }
 
-bool BoundingBox::valid() const { 
-    return pmax[0] < pmin[0];
+bool BoundingBox::valid() const {
+    return intersect_with(*this);
 }
 
 Vector3 BoundingBox::centroid() const {

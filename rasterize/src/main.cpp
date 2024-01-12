@@ -1,5 +1,5 @@
 #include <window/window.hpp>
-#include <camera/camera.hpp>
+#include <camera/orbit_camera.hpp>
 #include <rasterize/rasterize_system.hpp>
 
 int main(int argc, char** argv) {
@@ -50,7 +50,9 @@ int main(int argc, char** argv) {
 			}
 
 			ImGui::Separator();
-			ImGui::Text("radius: %.3f", camera.camera_data().radius);
+			static float radius = 10.0f;
+			ImGui::SliderFloat("radius", &radius, 0.0f, 20.0f);
+			camera.set_radius(radius);
 
 			// Camera data setter (for test only)
 			static float fov = 45.0f;

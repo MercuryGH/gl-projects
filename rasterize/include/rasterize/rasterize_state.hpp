@@ -10,11 +10,11 @@ namespace rasterize {
 
 namespace {
     const char* obj_file_paths[] = {
-        "cached_assets/obj/cube.obj",
-        "cached_assets/obj/sphere.obj",
-        "cached_assets/obj/bunny2k.obj",
-        "cached_assets/obj/armadillo1m.obj",
-        "cached_assets/obj/armadillo1m-cull.obj",
+        "assets/cached/obj/cube.obj",
+        "assets/cached/obj/sphere.obj",
+        "assets/cached/obj/bunny2k.obj",
+        "assets/cached/obj/armadillo1m.obj",
+        "assets/cached/obj/armadillo1m-cull.obj",
     };
 
     const std::function<void(Scene&)> rasterize_funcs[] = {

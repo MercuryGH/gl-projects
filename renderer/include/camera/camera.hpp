@@ -57,6 +57,7 @@ public:
 
 protected:
 	virtual void update() {}
+	~Camera() {}
 
 	CameraData data;
 

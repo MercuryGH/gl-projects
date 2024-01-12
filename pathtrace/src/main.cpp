@@ -5,8 +5,8 @@ int main(int argc, char** argv) {
 	using namespace renderer;
 	using namespace pathtrace;
 
-	const uint32_t k_width = 1200;
-	const uint32_t k_height = 1200;
+	const uint32_t k_width = 800;
+	const uint32_t k_height = 800;
 	Window window(k_width, k_height, "path tracer");
 
 	PathtraceSystem pathtrace_system;

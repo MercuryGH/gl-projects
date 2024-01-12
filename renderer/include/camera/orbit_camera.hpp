@@ -16,6 +16,8 @@ public:
 	OrbitCamera(glm::vec3 lookat, float radius, float aspect, float fov_deg=60.0f);
 	OrbitCamera(const FirstPersonCamera& first_person_camera);
 
+	void set_radius(float radius) { this->radius = radius; }
+
 	void rotate(float delta_x, float delta_y);
 	void forward(float delta);
 

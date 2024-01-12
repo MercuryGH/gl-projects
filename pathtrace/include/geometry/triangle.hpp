@@ -6,10 +6,9 @@
 
 namespace pathtrace {
 
-// 
 /**
  * implements 2 interfaces
- * Note: multi-inheritance has problem with destruction.
+ * Note: if not using virtual destructor, multi-inheritance has problem with destruction.
  * If uses the second base pointer, delete it will cause a bad memory operation
  * IHittable* tri = new Triangle();
  * delete tri; // OK, no memory leak
@@ -29,7 +28,7 @@ public:
     Vector3 get_normal() const { return normal; }
     IMaterial* get_material() const { return material; }
     void set_normal(Vector3 normal) { this->normal = normal; }
-    void set_uv(Vector2 uv1, Vector2 uv2, Vector2 uv3) { 
+    void set_uv(Vector2 uv1, Vector2 uv2, Vector2 uv3) {
         has_uv = true;
         uv[0] = uv1;
         uv[1] = uv2;

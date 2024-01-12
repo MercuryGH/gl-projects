@@ -1,5 +1,7 @@
 #include <pathtrace/pathtrace_system.hpp>
 
+#include <thread>
+
 #include <glad/glad.h>
 #include <glh/pipeline.hpp>
 
@@ -49,15 +51,32 @@ void PathtraceSystem::update(float delta_time)
     }
 
     if (ui->draw_dirty) {
-        timer.start();
+        std::thread([&] {
+            timer.start();
 
-        scene.render(state.spp);
+            scene.render(state.spp);
 
-        timer.stop();
-        state.last_render_time = timer.elapsed_milliseconds();
+            timer.stop();
+            state.last_render_time = timer.elapsed_milliseconds();
+        }).detach();
 
         ui->draw_dirty = false;
     }
+
+    // update rendering result
+    if (scene.is_rendering()) {
+        float cur_tick_process = scene.get_spp_progress();
+        // if (cur_tick_process > 0.9f) {
+        if (cur_tick_process > state.spp_progress) {
+            scene.write_result_to_texture();
+        }
+        state.spp = cur_tick_process;
+    }
+    if (scene.is_rendering() == false && state.is_rendering == true) {
+        // last draw
+        scene.write_result_to_texture();
+    }
+    state.is_rendering = scene.is_rendering();
 
     // draw call
     display(scene.get_display_texture());

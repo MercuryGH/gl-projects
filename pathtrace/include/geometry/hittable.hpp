@@ -12,6 +12,8 @@ class IHittable {
 public:
     virtual bool hit(const Ray& ray, Vector2 t_range, HitRecord& hit_record) const = 0;
     virtual BoundingBox get_bounding_box() const = 0;
+
+    virtual ~IHittable() {}
 };
 
 }

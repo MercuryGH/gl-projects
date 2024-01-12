@@ -9,6 +9,7 @@ class Triangle; // link fails when writes "struct Triangle"
 class BoundingBox: public IHittable {
 public:
     BoundingBox() { make_empty(); }
+    ~BoundingBox() {}
     BoundingBox(Vector3 pmin, Vector3 pmax): pmin(pmin), pmax(pmax) {}
     BoundingBox(const BoundingBox& rhs): pmin(rhs.pmin), pmax(rhs.pmax) {}
     BoundingBox(const Triangle& tri);

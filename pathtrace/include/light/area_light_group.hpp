@@ -26,7 +26,7 @@ public:
 
 private:
     // sample ray uniformly at each area light source
-    std::pair<Vector3, ScalarType> uniform_sample_ray(Vector3 wo, const IHittable& world, const HitRecord& prev_record, HitRecord& light_record) const;
+    std::pair<Vector3, ScalarType> uniform_sample_ray(const IHittable& world, const HitRecord& prev_record, HitRecord& light_record) const;
     ScalarType pdf(const Ray& ray, const IHittable& world, HitRecord& hit_record) const;
 
     std::vector<IAreaLight*> area_lights;

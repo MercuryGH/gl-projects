@@ -20,7 +20,7 @@ namespace {
     /**
      * construct bianry bvh
     */
-    IHittable* build_bvh_entry(std::vector<IHittable*>& objects, int start_index, int end_index) { 
+    IHittable* build_bvh_entry(std::vector<IHittable*>& objects, int start_index, int end_index) {
         if (start_index >= end_index) {
             assert(false); // bad, bug
             return nullptr;
@@ -37,11 +37,8 @@ namespace {
         for (int i = start_index; i < end_index; i++) {
             BoundingBox obj_bb = objects.at(i)->get_bounding_box();
 
-            // set current bvh bb
-            BoundingBox node_bb = node->get_bounding_box();
-
-            // TODO: set node bb
-            node_bb.merge(obj_bb);
+            // merge current bvh bb
+            node->merge_bounding_box(obj_bb);
             centroid_bb.merge(obj_bb.centroid());
         }
         int max_extent_dim = centroid_bb.max_extent_dim();

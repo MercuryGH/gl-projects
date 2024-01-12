@@ -13,9 +13,9 @@ Scene::Scene(uint32_t width, uint32_t height):
 }
 
 void Scene::import_obj_model(const char* path) {
-    renderer::ObjModel obj_model(path);
-    const auto& shapes = obj_model.shapes;
-    const auto& attrib = obj_model.attrib;
+    renderer::ObjModel obj_model(path, true);
+    const auto& shapes = obj_model.shapes();
+    const auto& attrib = obj_model.attrib();
 
     triangles.clear();
 
@@ -69,7 +69,7 @@ void Scene::rasterize_hierarchical_triangles(const std::vector<Triangle>& triang
 
 void Scene::build_octree_and_rasterize(const std::vector<Triangle>& triangles) {
     constexpr auto k_direct_rastrize_n_triangles = 16;
-    if (triangles.size() < k_direct_rastrize_n_triangles) { 
+    if (triangles.size() < k_direct_rastrize_n_triangles) {
         rasterize_hierarchical_triangles(triangles);
         return;
     }

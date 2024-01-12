@@ -28,19 +28,21 @@ std::pair<Vector3, ScalarType> PhongMaterial::sample_diffuse(Vector3 wo, const H
 }
 
 ScalarType PhongMaterial::pdf_specular(Vector3 wi, Vector3 wo, Vector3 normal) const {
-    ScalarType normal_cosine = glm::dot(normal, wi);
-    if (normal_cosine <= 0) {
+    ScalarType wi_normal_cosine = glm::dot(normal, wi);
+    if (wi_normal_cosine <= 0) {
         return 0;
     }
 
-    Vector3 w_reflect = util::reflect(wo, normal);
-    if (glm::dot(wi, w_reflect) <= 0) {
+    Vector3 wo_reflect = util::reflect(wo, normal);
+    ScalarType wi_wr_weight = glm::dot(wi, wo_reflect);
+    bool wi_wr_same_dir = wi_wr_weight > 0;
+    if (wi_wr_same_dir == false) {
         return 0;
     }
 
     // phong ndf (not blinn-phong). Using reflctance instead of half-way vector
     // ref: https://agraphicsguynotes.com/posts/sample_microfacet_brdf/
-    return (phong_exponent + 1) * k_inv_2pi * std::pow(glm::dot(wi, w_reflect), phong_exponent);
+    return (phong_exponent + 1) * k_inv_2pi * std::pow(wi_wr_weight, phong_exponent);
 }
 
 std::pair<Vector3, ScalarType> PhongMaterial::sample_specular(Vector3 wo, const HitRecord& hit_record) const {
@@ -75,8 +77,10 @@ ScalarType PhongMaterial::pdf(Vector3 wi, Vector3 wo, const HitRecord& hit_recor
     ScalarType diffuse_prob = glm::compMax(kd) / sum_prob;
     ScalarType specular_prob = 1.0f - diffuse_prob;
 
+    ScalarType pdf = diffuse_prob * pdf_diffuse(wi, wo, normal) + specular_prob * pdf_specular(wi, wo, normal);
+
     // MIS
-    return diffuse_prob * pdf_diffuse(wi, wo, normal) + specular_prob * pdf_specular(wi, wo, normal);
+    return pdf;
 }
 
 Vector3 PhongMaterial::bxdf(Vector3 wi, Vector3 wo, const HitRecord& hit_record) const {
@@ -89,9 +93,17 @@ Vector3 PhongMaterial::bxdf(Vector3 wi, Vector3 wo, const HitRecord& hit_record)
         return { 0, 0, 0 };
     }
 
-    Vector3 w_reflect = util::reflect(wo, normal);
     Vector3 diffuse_term = kd * k_inv_pi;
-    Vector3 specular_term = ks * (phong_exponent + 2) * std::pow(glm::dot(w_reflect, wo), phong_exponent);
+
+    Vector3 wi_reflect = util::reflect(wi, normal);
+    ScalarType wo_wr_weight = glm::dot(wi_reflect, wo);
+    bool wo_wr_same_dir = wo_wr_weight > 0;
+    Vector3 specular_term;
+    if (wo_wr_same_dir) {
+        specular_term = ks * k_inv_pi * (phong_exponent + 2) * std::pow(wo_wr_weight, phong_exponent);
+    } else {
+        specular_term = { 0, 0, 0 };
+    }
 
     return diffuse_term + specular_term;
 }
@@ -103,9 +115,7 @@ std::pair<Vector3, ScalarType> PhongMaterial::sample_wi(Vector3 wo, const HitRec
 
     ScalarType sum_prob = glm::compMax(ks) + glm::compMax(kd);
     if (sum_prob <= 0) {
-        // bad
-        assert(false);
-        return { {0, 0, 1}, 0 };
+        return { {0, 0, 0}, 0.0f };
     }
 
     ScalarType diffuse_prob = glm::compMax(kd) / sum_prob;
@@ -123,12 +133,14 @@ std::pair<Vector3, ScalarType> PhongMaterial::sample_wi(Vector3 wo, const HitRec
         pdf_d = pdf_diffuse(wi, wo, normal);
     }
 
-    ScalarType normal_cosine = glm::dot(normal, wi);
+    ScalarType normal_cosine = glm::dot(wi, normal);
     if (normal_cosine <= 0) {
-        return { wi, 0 };
+        return { wi, 0.0f };
     }
 
-    return { wi, diffuse_prob * pdf_d + specular_prob * pdf_s };
+    ScalarType pdf = diffuse_prob * pdf_d + specular_prob * pdf_s;
+
+    return { wi, pdf };
 }
 
 }

@@ -13,7 +13,7 @@ int main(int argc, char** argv) {
 
 	std::unique_ptr<OrbitCamera> oc = std::make_unique<OrbitCamera>(Vector3(0.0f), 10.0f, window.get_aspect());
 	std::unique_ptr<FirstPersonCamera> fpc = nullptr;
-	Camera& camera = oc.get();
+	Camera* camera = oc.get();
 
 	BrepSystem brep_system{};
 	brep_system.set_camera_buffer(camera->get_buffer());
@@ -60,22 +60,22 @@ int main(int argc, char** argv) {
 
 				if (window.key_pressed(GLFW_KEY_W)) {
 					fpc->move(CameraMoveDirection::eForward, delta_t);
-				} 
+				}
 				if (window.key_pressed(GLFW_KEY_S)) {
 					fpc->move(CameraMoveDirection::eBackward, delta_t);
 				}
 				if (window.key_pressed(GLFW_KEY_A)) {
 					fpc->move(CameraMoveDirection::eLeft, delta_t);
-				} 
+				}
 				if (window.key_pressed(GLFW_KEY_D)) {
 					fpc->move(CameraMoveDirection::eRight, delta_t);
-				} 
+				}
 				if (window.key_pressed(GLFW_KEY_SPACE)) {
 					fpc->move(CameraMoveDirection::eUp, delta_t);
-				} 
+				}
 				if (window.key_pressed(GLFW_KEY_LEFT_CONTROL)) {
 					fpc->move(CameraMoveDirection::eDown, delta_t);
-				} 
+				}
 			}
 			brep_system.set_camera_buffer(camera->get_buffer());
 
@@ -87,7 +87,7 @@ int main(int argc, char** argv) {
 				}
 			}
 		}
-		
+
 		ImGui::End();
 	});
 

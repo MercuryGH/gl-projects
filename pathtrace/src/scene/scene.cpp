@@ -18,7 +18,7 @@
 #include <scene/bvh.hpp>
 
 /**
- * maths based on https://raytracing.github.io/books/RayTracingTheRestOfYourLife.html and the book PBRT 
+ * maths based on https://raytracing.github.io/books/RayTracingTheRestOfYourLife.html and the book PBRT
 */
 namespace pathtrace {
 
@@ -126,10 +126,8 @@ namespace {
 
 }
 
-Scene::Scene(uint32_t width, uint32_t height):
-    display_texture(GL_RGBA8, width, height),
-    buf(width, height)
-{
+Scene::Scene(uint32_t width, uint32_t height) {
+    set_size(width, height);
 }
 
 Scene::~Scene() {
@@ -151,7 +149,8 @@ void Scene::clear() {
 
 void Scene::set_size(uint32_t width, uint32_t height) {
     display_texture.init(GL_RGBA8, width, height);
-    buf.set_size(width, height);
+    bufs[0].set_size(width, height);
+    bufs[1].set_size(width, height);
 }
 
 void Scene::import_scene_file(const char* obj_file_path, const char* mtl_file_path, const char* xml_file_path, bool read_from_cache) {
@@ -246,35 +245,42 @@ void Scene::render(int spp) {
         return;
     }
 
+    rendering = true;
+    spp_progress_percentage.start(spp);
+
+    auto& buf = get_write_buffer();
     buf.clear();
 
-    for (int cur_spp = 1; cur_spp <= spp; cur_spp++) {
+    for (cur_spp = 1; cur_spp <= spp; cur_spp++) {
         buf.foreach_pixel_parallel([&](int x, int y) {
             Ray ray_cast = camera.cast_ray(x, y);
-            Vector3 color = path_tracing(ray_cast, *bvh_root);
+            Vector3 color = path_tracing(ray_cast, *bvh_root, x, y);
 
-            // TODO: debug check
+            // debug check
             for (int i = 0; i < 3; i++) {
                 if (std::isfinite(color[i]) == false) {
-                    printf("Warning: INF in color result\n");
-                    assert(false);
+                    buf.set_pixel_debug(x, y, PixelDebugHintType::eNaNColor);
                 }
             }
 
             buf.add_pixel_color(x, y, color);
         });
 
-        // TODO: modify to thread and ui
-        if (cur_spp % 5 == 0) {
-            printf("cur_spp = %d\n", cur_spp);
-            write_result_to_texture(cur_spp);
+        // swap logic
+        if (main_thread_read) {
+            copy_buffer_w2r(); // still has bug
+            swap_buffer();
+            buf = get_write_buffer();
+            cv.notify_all();
         }
+
+        spp_progress_percentage.increment_progress(1);
     }
 
-    write_result_to_texture(spp);
+    rendering = false;
 }
 
-Vector3 Scene::path_tracing(const Ray& init_ray, const IHittable& world) {
+Vector3 Scene::path_tracing(const Ray& init_ray, const IHittable& world, int x, int y) {
     Vector3 color{ 0, 0, 0 };
     Vector3 throughput{ 1.0f, 1.0f, 1.0f };
 
@@ -283,7 +289,7 @@ Vector3 Scene::path_tracing(const Ray& init_ray, const IHittable& world) {
     HitRecord hit_record;
     bool light_source_in_camera = true; // view the light source directly
     Ray cur_ray = init_ray;
-    for (int bounce_cnt = 0; bounce_cnt < k_max_bounces; bounce_cnt++) { 
+    for (int bounce_cnt = 0; bounce_cnt < k_max_bounces; bounce_cnt++) {
         if (world.hit(cur_ray, Vector2{ k_eps, k_max }, hit_record) == false)  {
             break;
         }
@@ -299,12 +305,7 @@ Vector3 Scene::path_tracing(const Ray& init_ray, const IHittable& world) {
             break;
         }
 
-        // TODO: debug only
-        if (wo_normal_cosine < 0) {
-            printf("Warning: bad cosine angle\n");
-        }
-
-        // inverse normal if needed
+        // invert normal if hits a backface
         hit_record.normal = wo_normal_cosine > 0 ? hit_record.normal : -hit_record.normal;
         auto [wi, pdf] = hit_record.material->sample_wi(wo, hit_record);
 
@@ -313,7 +314,7 @@ Vector3 Scene::path_tracing(const Ray& init_ray, const IHittable& world) {
             throughput *= hit_record.material->bxdf(wi, wo, hit_record);
             cur_ray = Ray{ .origin = hit_record.pos, .dir = wi };
             continue;
-        } 
+        }
 
         light_source_in_camera = false;
 
@@ -328,6 +329,9 @@ Vector3 Scene::path_tracing(const Ray& init_ray, const IHittable& world) {
         }
 
         // TODO: add a bounce threshold for rr
+        // if (bounce_cnt < 3) {
+        //     continue;
+        // }
         // Russian Roulette
         ScalarType p = glm::compMax(throughput);
         ScalarType russian_roulette = util::get_uniform_real_distribution(0.0f, 1.0f);
@@ -344,13 +348,42 @@ const renderer::GlTexture2D& Scene::get_display_texture() {
     return display_texture;
 }
 
-void Scene::write_result_to_texture(int spp) {
+void Scene::write_result_to_texture() {
+    if (rendering) {
+        main_thread_read = true;
+
+        // wait for read buffer available
+        std::unique_lock lck(mtx);
+        cv.wait(lck);
+
+        main_thread_read = false;
+    }
+
+    const auto& buf = rendering ? get_read_buffer() : get_write_buffer();
+
     std::vector<uint8_t> raw_data(buf.get_n_pixels() * 4);
 
     buf.foreach_pixel_parallel([&](int x, int y) {
         const int idx = buf.get_pixel_idx(x, y);
         Vector3 color = buf.get_pixel(x, y);
-        color /= (float)(spp);
+        color /= (float)(cur_spp);
+
+        switch (buf.get_pixel_debug(x, y)) {
+        case PixelDebugHintType::eNaNColor: {
+            color = { 1, 0, 0 }; // red
+            break;
+        }
+        case PixelDebugHintType::eWrongColor: {
+            color = { 0, 1, 0 }; // green
+            break;
+        }
+        case PixelDebugHintType::eSingularSurface: {
+            color = { 0, 0, 1 }; // blue
+            break;
+        }
+        default:
+            break;
+        }
 
         // clamp color
         for (int i = 0; i < 3; i++) {
@@ -371,6 +404,8 @@ void Scene::write_result_to_texture(int spp) {
     });
 
     display_texture.set_data(raw_data.data());
+
+    // indicate entry
 }
 
 }
