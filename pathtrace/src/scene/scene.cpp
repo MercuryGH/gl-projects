@@ -1,4 +1,5 @@
 #include <unordered_map>
+#include <filesystem>
 
 #include <glad/glad.h>
 
@@ -82,11 +83,13 @@ namespace {
                 std::shared_ptr<TextureRGBf> texture = nullptr;
                 if (has_texture) {
                     // load texture
-                    std::string obj_file_path = model.get_obj_file_path();
-                    std::vector<float> data = renderer::ObjModel::read_texture_rgbf((obj_file_path + texture_name).c_str(), read_from_cache);
+                    std::string obj_file_path_str = model.get_obj_file_path();
+                    std::filesystem::path obj_file_path(obj_file_path_str);
+                    std::filesystem::path texture_dir = obj_file_path.parent_path() / texture_name;
+                    auto[ data, width, height ] = renderer::ObjModel::read_texture_rgbf(texture_dir.generic_string().c_str(), read_from_cache);
 
                     // texture can be shared
-                    texture = std::make_shared<TextureRGBf>(data);
+                    texture = std::make_shared<TextureRGBf>(data, width, height);
                 }
 
                 PhongMaterial* phong_material = new PhongMaterial(diffuse, specular, emissive, phong_exponent, texture);
@@ -149,8 +152,8 @@ void Scene::clear() {
 
 void Scene::set_size(uint32_t width, uint32_t height) {
     display_texture.init(GL_RGBA8, width, height);
-    bufs[0].set_size(width, height);
-    bufs[1].set_size(width, height);
+    display_texture_buf.resize(width * height * 4);
+    buf.set_size(width, height);
 }
 
 void Scene::import_scene_file(const char* obj_file_path, const char* mtl_file_path, const char* xml_file_path, bool read_from_cache) {
@@ -248,7 +251,6 @@ void Scene::render(int spp) {
     rendering = true;
     spp_progress_percentage.start(spp);
 
-    auto& buf = get_write_buffer();
     buf.clear();
 
     for (cur_spp = 1; cur_spp <= spp; cur_spp++) {
@@ -266,12 +268,8 @@ void Scene::render(int spp) {
             buf.add_pixel_color(x, y, color);
         });
 
-        // swap logic
-        if (main_thread_read) {
-            copy_buffer_w2r(); // still has bug
-            swap_buffer();
-            buf = get_write_buffer();
-            cv.notify_all();
+        if (true) {
+            write_result_to_texture_buf();
         }
 
         spp_progress_percentage.increment_progress(1);
@@ -328,10 +326,6 @@ Vector3 Scene::path_tracing(const Ray& init_ray, const IHittable& world, int x, 
             break;
         }
 
-        // TODO: add a bounce threshold for rr
-        // if (bounce_cnt < 3) {
-        //     continue;
-        // }
         // Russian Roulette
         ScalarType p = glm::compMax(throughput);
         ScalarType russian_roulette = util::get_uniform_real_distribution(0.0f, 1.0f);
@@ -348,21 +342,7 @@ const renderer::GlTexture2D& Scene::get_display_texture() {
     return display_texture;
 }
 
-void Scene::write_result_to_texture() {
-    if (rendering) {
-        main_thread_read = true;
-
-        // wait for read buffer available
-        std::unique_lock lck(mtx);
-        cv.wait(lck);
-
-        main_thread_read = false;
-    }
-
-    const auto& buf = rendering ? get_read_buffer() : get_write_buffer();
-
-    std::vector<uint8_t> raw_data(buf.get_n_pixels() * 4);
-
+void Scene::write_result_to_texture_buf() {
     buf.foreach_pixel_parallel([&](int x, int y) {
         const int idx = buf.get_pixel_idx(x, y);
         Vector3 color = buf.get_pixel(x, y);
@@ -398,14 +378,10 @@ void Scene::write_result_to_texture() {
 
         for (int i = 0; i < 3; i++) {
             uint8_t byte_color = static_cast<uint8_t>(color[i] * 255);
-            raw_data.at(idx * 4 + i) = byte_color;
+            display_texture_buf.at(idx * 4 + i) = byte_color;
         }
-        raw_data.at(idx * 4 + 3) = 255; // alpha
+        display_texture_buf.at(idx * 4 + 3) = 255; // alpha
     });
-
-    display_texture.set_data(raw_data.data());
-
-    // indicate entry
 }
 
 }

@@ -12,6 +12,8 @@
 namespace pathtrace {
 
 ScalarType PhongMaterial::pdf_diffuse(Vector3 wi, Vector3 wo, Vector3 normal) const {
+    wi = glm::normalize(wi);
+    wo = glm::normalize(wo);
     ScalarType normal_cosine = glm::dot(normal, wi);
     if (normal_cosine <= 0) {
         return 0;
@@ -21,6 +23,7 @@ ScalarType PhongMaterial::pdf_diffuse(Vector3 wi, Vector3 wo, Vector3 normal) co
 }
 
 std::pair<Vector3, ScalarType> PhongMaterial::sample_diffuse(Vector3 wo, const HitRecord& hit_record) const {
+    wo = glm::normalize(wo);
     Vector3 p = util::get_uniform_unit_sphere_distribution();
     Vector3 wi = util::local_to_world(p, hit_record.normal);
     ScalarType pdf = pdf_diffuse(wi, wo, hit_record.normal);
@@ -28,6 +31,8 @@ std::pair<Vector3, ScalarType> PhongMaterial::sample_diffuse(Vector3 wo, const H
 }
 
 ScalarType PhongMaterial::pdf_specular(Vector3 wi, Vector3 wo, Vector3 normal) const {
+    wi = glm::normalize(wi);
+    wo = glm::normalize(wo);
     ScalarType wi_normal_cosine = glm::dot(normal, wi);
     if (wi_normal_cosine <= 0) {
         return 0;
@@ -48,6 +53,7 @@ ScalarType PhongMaterial::pdf_specular(Vector3 wi, Vector3 wo, Vector3 normal) c
 std::pair<Vector3, ScalarType> PhongMaterial::sample_specular(Vector3 wo, const HitRecord& hit_record) const {
     // sample with (cos_\theta)^{\alpha+1}
     // biased unit sphere
+    wo = glm::normalize(wo);
     ScalarType phi = util::get_uniform_real_distribution(0.0f, k_2pi);
     ScalarType cos_theta = std::pow(util::get_uniform_real_distribution(0.0f, 1.0f), 1.0f / (phong_exponent + 1));
     ScalarType cos_phi = std::cos(phi);
@@ -63,6 +69,8 @@ ScalarType PhongMaterial::pdf(Vector3 wi, Vector3 wo, const HitRecord& hit_recor
     Vector3 normal = hit_record.normal;
     Vector3 kd = has_texture() ? texture->at(hit_record.uv) : diffuse;
     Vector3 ks = specular;
+    wi = glm::normalize(wi);
+    wo = glm::normalize(wo);
 
     ScalarType normal_cosine = glm::dot(normal, wi);
     if (normal_cosine <= 0) {
@@ -87,6 +95,8 @@ Vector3 PhongMaterial::bxdf(Vector3 wi, Vector3 wo, const HitRecord& hit_record)
     Vector3 normal = hit_record.normal;
     Vector3 kd = has_texture() ? texture->at(hit_record.uv) : diffuse;
     Vector3 ks = specular;
+    wi = glm::normalize(wi);
+    wo = glm::normalize(wo);
 
     ScalarType normal_cosine = glm::dot(normal, wi);
     if (normal_cosine <= 0) {
@@ -112,6 +122,7 @@ std::pair<Vector3, ScalarType> PhongMaterial::sample_wi(Vector3 wo, const HitRec
     Vector3 normal = hit_record.normal;
     Vector3 kd = has_texture() ? texture->at(hit_record.uv) : diffuse;
     Vector3 ks = specular;
+    wo = glm::normalize(wo);
 
     ScalarType sum_prob = glm::compMax(ks) + glm::compMax(kd);
     if (sum_prob <= 0) {

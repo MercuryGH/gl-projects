@@ -11,7 +11,7 @@ public:
     ObjModel(const char* path, bool read_from_cache=false);
     ObjModel(const char* obj_file_path, const char* mtl_file_path, const char* xml_file_path, bool read_from_cache=false);
 
-    static std::vector<float> read_texture_rgbf(const char* texture_path, bool read_from_cache=false);
+    static std::tuple<std::vector<float>, int, int> read_texture_rgbf(const char* texture_path, bool read_from_cache=false);
 
     const std::vector<tinyobj::shape_t>& shapes() const { 
         return obj_reader.GetShapes();

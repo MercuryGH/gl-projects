@@ -76,9 +76,9 @@ ObjModel::ObjModel(const char* obj_file_path, const char* mtl_file_path, const c
     }
 }
 
-std::vector<float> ObjModel::read_texture_rgbf(const char* texture_path, bool read_from_cache) {
+std::tuple<std::vector<float>, int, int> ObjModel::read_texture_rgbf(const char* texture_path, bool read_from_cache) {
     // DEBUG 
-    printf("path: %s\n", texture_path);
+    printf("Loading texture: %s\n", texture_path);
 
     std::vector<float> data;
     int width;
@@ -93,15 +93,20 @@ std::vector<float> ObjModel::read_texture_rgbf(const char* texture_path, bool re
         img_data = stbi_loadf(texture_path, &width, &height, &load_channels, disired_channels);
     }
 
-    assert(load_channels == disired_channels);
-    data.resize(width * height * load_channels);
-    for (int i = 0; i < width * height * load_channels; i++) {
+    if (load_channels > disired_channels) {
+        printf("Warning: texture channels = %d > 3, use RGB channle only.\n", load_channels);
+    } else if (load_channels < disired_channels) {
+        printf("Warning: texture channels = %d < 3, not supported yet.\n", load_channels);
+    }
+
+    data.resize(width * height * disired_channels);
+    for (int i = 0; i < width * height * disired_channels; i++) {
         data.at(i) = img_data[i];
     }
 
     stbi_image_free(img_data);
 
-    return data;
+    return { data, width, height };
 }
 
 }

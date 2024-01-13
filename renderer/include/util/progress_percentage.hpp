@@ -8,7 +8,7 @@ public:
     void increment_progress(int inc);
     void set_progress_percentage(int percentage);
 
-    float get_progress() { return progress; }
+    float get_progress() const { return progress; }
 
 private:
     float progress{ 0.0f };

@@ -4,8 +4,9 @@
 namespace pathtrace {
 
 Vector3 TextureRGBf::at(int x, int y) const {
-    x = util::clamp(x, 0, width);
-    y = util::clamp(y, 0, height);
+    // TODO: modify to [-1,1] repeat uv
+    x = util::clamp(x, 0, width - 1);
+    y = util::clamp(y, 0, height - 1);
 
     const int idx = (y * width + x) * n_channels;
     

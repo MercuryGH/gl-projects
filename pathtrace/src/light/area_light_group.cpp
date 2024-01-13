@@ -92,6 +92,11 @@ Vector3 AreaLightGroup::sample_light(Vector3 wo, const IHittable& world, const H
             Vector3 emissive = light_record.material->light_emitted();
 
             color += bxdf * emissive * wi_normal_cosine * weight / light_pdf;
+            for (int i = 0; i < 3; i++) {
+                if (std::isfinite(color[i]) == false) {
+                    printf("Bad\n");
+                }
+            }
         }
     }
 
@@ -108,6 +113,12 @@ Vector3 AreaLightGroup::sample_light(Vector3 wo, const IHittable& world, const H
             Vector3 emissive = light_record.material->light_emitted();
 
             color += bxdf * emissive * wi_normal_cosine * weight / bxdf_pdf;
+            // debug check
+            for (int i = 0; i < 3; i++) {
+                if (std::isfinite(color[i]) == false) {
+                    printf("Bad\n");
+                }
+            }
         }
     }
 

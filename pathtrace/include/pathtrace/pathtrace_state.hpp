@@ -39,7 +39,7 @@ private:
     int cur_scene_id{ 0 }; // selectd cached scene
     const char* last_import_scene_path_from_disk{ nullptr };
 
-    int spp{ 5 }; // #sample per pixel
+    int spp{ 1 }; // #sample per pixel
 
     double last_import_time{ 0 };
     double last_render_time{ 0 };

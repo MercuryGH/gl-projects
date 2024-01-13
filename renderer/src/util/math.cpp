@@ -5,7 +5,7 @@
 namespace util {
 
 Vector3 reflect(Vector3 wo, Vector3 normal) {
-    return 2.0f * glm::dot(normal, wo) * normal - wo;
+    return glm::normalize(2.0f * glm::dot(normal, wo) * normal - wo);
 }
 
 /**

@@ -68,13 +68,13 @@ void PathtraceSystem::update(float delta_time)
         float cur_tick_process = scene.get_spp_progress();
         // if (cur_tick_process > 0.9f) {
         if (cur_tick_process > state.spp_progress) {
-            scene.write_result_to_texture();
+            scene.assign_display_texture_data();
         }
-        state.spp = cur_tick_process;
+        state.spp_progress = cur_tick_process;
     }
     if (scene.is_rendering() == false && state.is_rendering == true) {
         // last draw
-        scene.write_result_to_texture();
+        scene.assign_display_texture_data();
     }
     state.is_rendering = scene.is_rendering();
 
