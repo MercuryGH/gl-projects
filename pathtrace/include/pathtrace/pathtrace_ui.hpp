@@ -17,6 +17,7 @@ private:
     bool draw_dirty{ true };
     bool scene_dirty{ true };
     bool camera_dirty{ true };
+    bool render_settings_dirty{ true };
 
     void draw_ui();
 };

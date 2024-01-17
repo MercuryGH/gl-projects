@@ -77,30 +77,29 @@ ObjModel::ObjModel(const char* obj_file_path, const char* mtl_file_path, const c
 }
 
 std::tuple<std::vector<float>, int, int> ObjModel::read_texture_rgbf(const char* texture_path, bool read_from_cache) {
-    // DEBUG 
+    // DEBUG
     printf("Loading texture: %s\n", texture_path);
 
-    std::vector<float> data;
     int width;
     int height;
     int load_channels;
-    constexpr int disired_channels = 3;
+    constexpr int k_disired_channels = 3;
     float* img_data;
     if (read_from_cache) {
         std::vector<uint8_t> file_data = get_cached_file_data(texture_path);
-        img_data = stbi_loadf_from_memory(file_data.data(), file_data.size(), &width, &height, &load_channels, disired_channels);
+        img_data = stbi_loadf_from_memory(file_data.data(), file_data.size(), &width, &height, &load_channels, k_disired_channels);
     } else {
-        img_data = stbi_loadf(texture_path, &width, &height, &load_channels, disired_channels);
+        img_data = stbi_loadf(texture_path, &width, &height, &load_channels, k_disired_channels);
     }
 
-    if (load_channels > disired_channels) {
+    if (load_channels > k_disired_channels) {
         printf("Warning: texture channels = %d > 3, use RGB channle only.\n", load_channels);
-    } else if (load_channels < disired_channels) {
+    } else if (load_channels < k_disired_channels) {
         printf("Warning: texture channels = %d < 3, not supported yet.\n", load_channels);
     }
 
-    data.resize(width * height * disired_channels);
-    for (int i = 0; i < width * height * disired_channels; i++) {
+    std::vector<float> data(width * height * k_disired_channels);
+    for (int i = 0; i < width * height * k_disired_channels; i++) {
         data.at(i) = img_data[i];
     }
 

@@ -41,6 +41,7 @@ namespace {
             node->merge_bounding_box(obj_bb);
             centroid_bb.merge(obj_bb.centroid());
         }
+
         int max_extent_dim = centroid_bb.max_extent_dim();
 
         const auto cmp_dim = max_extent_dim == 0 ? cmp<0>

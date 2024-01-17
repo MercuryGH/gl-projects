@@ -1,3 +1,5 @@
+#include <scene/scene.hpp>
+
 #include <unordered_map>
 #include <filesystem>
 
@@ -10,7 +12,6 @@
 
 #include <glm/gtx/component_wise.hpp>
 
-#include <scene/scene.hpp>
 #include <material/glass_material.hpp>
 #include <material/phong_material.hpp>
 #include <material/texture_rgb_f.hpp>
@@ -115,15 +116,7 @@ namespace {
         Vector3 lookat = read_vector3(camera_node->FirstChildElement("lookat"));
         Vector3 up = read_vector3(camera_node->FirstChildElement("up"));
 
-        auto pinhole_camera = PinholeCamera {
-            .eye = eye,
-            .lookat = lookat,
-            .up = up,
-            .fovy = fovy,
-            .width = width,
-            .height = height
-        };
-        pinhole_camera.update();
+        auto pinhole_camera = PinholeCamera(eye, lookat, up, fovy, width, height);
         return pinhole_camera;
     }
 
@@ -175,6 +168,7 @@ void Scene::import_scene_file(const char* obj_file_path, const char* mtl_file_pa
         int vertex_idx_offset = 0;
 
         const int n_tris = shape.mesh.num_face_vertices.size();
+        total_n_tris += n_tris;
 
         // foreach triangle
         for (int tri_idx = 0; tri_idx < n_tris; tri_idx++) {
@@ -241,6 +235,9 @@ void Scene::import_scene_file(const char* obj_file_path, const char* mtl_file_pa
 
     std::vector<IHittable*> objects_shallow_copy = objects;
     bvh_root = build_bvh(objects_shallow_copy);
+
+    // TODO: DEBUG only
+    dynamic_cast<BvhNode*>(bvh_root)->set_scene(this);
 }
 
 void Scene::render(int spp) {
@@ -252,10 +249,10 @@ void Scene::render(int spp) {
     spp_progress_percentage.start(spp);
 
     buf.clear();
-
     for (cur_spp = 1; cur_spp <= spp; cur_spp++) {
         buf.foreach_pixel_parallel([&](int x, int y) {
             Ray ray_cast = camera.cast_ray(x, y);
+            // Vector3 color = path_tracing_debug(ray_cast, *bvh_root, x, y, cnt);
             Vector3 color = path_tracing(ray_cast, *bvh_root, x, y);
 
             // debug check
@@ -268,13 +265,16 @@ void Scene::render(int spp) {
             buf.add_pixel_color(x, y, color);
         });
 
-        if (true) {
+        // Ray ray_cast = camera.cast_ray(500, 500);
+        // Vector3 color = path_tracing_debug(ray_cast, *bvh_root, x, y, cnt);
+        // Vector3 color = path_tracing(ray_cast, *bvh_root, 500, 500);
+
+        if (update_result) {
             write_result_to_texture_buf();
         }
 
         spp_progress_percentage.increment_progress(1);
     }
-
     rendering = false;
 }
 
@@ -282,7 +282,7 @@ Vector3 Scene::path_tracing(const Ray& init_ray, const IHittable& world, int x, 
     Vector3 color{ 0, 0, 0 };
     Vector3 throughput{ 1.0f, 1.0f, 1.0f };
 
-    constexpr int k_max_bounces = 10;
+    constexpr int k_max_bounces = 20;
 
     HitRecord hit_record;
     bool light_source_in_camera = true; // view the light source directly
@@ -300,7 +300,6 @@ Vector3 Scene::path_tracing(const Ray& init_ray, const IHittable& world, int x, 
             if (light_source_in_camera && wo_normal_cosine > 0) {
                 color += throughput * hit_record.material->light_emitted();
             }
-            break;
         }
 
         // invert normal if hits a backface
@@ -310,17 +309,18 @@ Vector3 Scene::path_tracing(const Ray& init_ray, const IHittable& world, int x, 
         // hit a glass, treat it as a special case
         if (hit_record.material->get_type() == MaterialType::eGlass) {
             throughput *= hit_record.material->bxdf(wi, wo, hit_record);
-            cur_ray = Ray{ .origin = hit_record.pos, .dir = wi };
+            cur_ray = Ray(hit_record.pos, wi);
             continue;
         }
 
         light_source_in_camera = false;
 
-        color += throughput * area_lights.sample_light(wo, world, hit_record);
+        Vector3 light_color = area_lights.sample_light(wo, world, hit_record);
+        color += throughput * light_color;
         ScalarType wi_normal_cosine = glm::dot(hit_record.normal, wi);
-        if (wi_normal_cosine > 0 && pdf > 0) {
+        if (wi_normal_cosine > 0 && pdf > k_eps) {
             throughput *= hit_record.material->bxdf(wi, wo, hit_record) * wi_normal_cosine / pdf;
-            cur_ray = Ray{ .origin = hit_record.pos, .dir = wi };
+            cur_ray = Ray(hit_record.pos, wi);
         } else {
             // cannot bounce
             break;

@@ -39,7 +39,7 @@ Ray PinholeCamera::cast_ray(int x, int y) const {
 
     Vector3 random_offset = pixel00_corner + (x + random_w_offset - 0.5f) * delta_w + (y + random_h_offset - 0.5f) * delta_h;
 
-    return { origin, random_offset - origin };
+    return Ray(origin, random_offset - origin);
 }
 
 }

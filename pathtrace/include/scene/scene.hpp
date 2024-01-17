@@ -29,9 +29,16 @@ public:
     const renderer::GlTexture2D& get_display_texture();
 
     PinholeCamera& camera_data() { return camera; }
+    void set_camera(PinholeCamera camera) { this->camera = camera; set_size(camera.width, camera.height); }
 
     float get_spp_progress() const { return spp_progress_percentage.get_progress(); }
     bool is_rendering() const { return rendering; }
+    void enable_realtime_update_result(bool flag) { update_result = flag; }
+
+    const std::vector<IHittable*>& object_list() const { return objects; }
+    int get_total_n_tris() const { return total_n_tris; }
+
+    void save_result_to_png_file() { display_texture.dump_png_file(); }
 
 private:
     Vector3 path_tracing(const Ray& ray, const IHittable& world, int x, int y);
@@ -43,8 +50,10 @@ private:
 
     int cur_spp{ 0 };
     bool rendering{ false };
+    bool update_result{ true };
 
     std::vector<IHittable*> objects;
+    int total_n_tris{ 0 };
     IHittable* bvh_root{ nullptr };
     std::vector<IMaterial*> materials;
     AreaLightGroup area_lights;

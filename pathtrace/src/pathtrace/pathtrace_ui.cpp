@@ -40,26 +40,33 @@ void PathtraceSystemUI::draw_ui() {
 		}
 		ImGui::PopStyleColor(3);
 
+		ImGui::BeginDisabled(state.is_rendering);
+
 		scene_dirty |= ImGui::Button("Load scene", ImVec2(-1, 0));
 
-		ImGui::Text("Last render time: %.2lf ms", state.last_import_time);
+		ImGui::Text("Last scene loading time: %.2lf ms", state.last_import_time);
 
 		ImGui::Text("#Tri: %d", state.n_triangles);
 
 		ImGui::Separator();
-		// camera
+
+		camera_dirty |= ImGui::InputFloat3("eye", state.camera_settings.eye);
+		camera_dirty |= ImGui::InputFloat3("lookat", state.camera_settings.lookat);
+		camera_dirty |= ImGui::InputFloat3("up", state.camera_settings.up);
+
+		camera_dirty |= ImGui::InputFloat("fovy", &state.camera_settings.fovy);
+		camera_dirty |= ImGui::InputFloat("width", &state.camera_settings.width);
+		camera_dirty |= ImGui::InputFloat("height", &state.camera_settings.height);
 
 		ImGui::Separator();
 		// path tracing
 
 		ImGui::InputInt("#spp", &state.spp);
 
-		ImGui::BeginDisabled(state.is_rendering);
-
 		ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(0, 0.6, 0.6));
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(0, 0.7, 0.7));
 		ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(0, 0.8, 0.8));
-		draw_dirty |= ImGui::Button("Render", ImVec2(-1, 0));
+		draw_dirty |= ImGui::Button(state.is_rendering ? "Rendering, please wait..." : "Render", ImVec2(-1, 0));
 		ImGui::PopStyleColor(3);
 
 		ImGui::EndDisabled();
@@ -68,6 +75,12 @@ void PathtraceSystemUI::draw_ui() {
 		}
 
 		ImGui::Text("Last render time: %.2lf ms", state.last_render_time);
+
+		ImGui::Separator();
+
+		ImGui::Checkbox("update result", &state.realtime_update_result);
+
+		render_settings_dirty |= ImGui::Checkbox("gamma correction", &state.render_settings.gamma_correction);
 	}
 	ImGui::End();
 }

@@ -33,6 +33,7 @@ std::pair<Vector3, ScalarType> AreaLightGroup::uniform_sample_ray(const IHittabl
     }
 
     IAreaLight* light = uniform_sample(area_lights);
+    // IAreaLight* light = area_lights.at(area_lights.size() - 1);
 
     auto [ wi, pdf ] = light->uniform_sample_ray(world, prev_record, light_record);
     pdf /= n_lights;
@@ -47,7 +48,6 @@ ScalarType AreaLightGroup::pdf(const Ray& ray, const IHittable& world, HitRecord
 
     bool ray_hits = world.hit(ray, Vector2{ k_eps, k_max }, light_record);
 
-    // TODO: epsilon equal
     bool hits_light = ray_hits && light_record.material->light_emitted() != Vector3{ 0, 0, 0 };
     bool hits_geometry = ray_hits && light_record.hit_geometry != nullptr;
     ScalarType light_cosine = -glm::dot(ray.dir, light_record.normal);
@@ -58,7 +58,16 @@ ScalarType AreaLightGroup::pdf(const Ray& ray, const IHittable& world, HitRecord
         ScalarType sq_distance = glm::dot(ray.origin - light_record.pos, ray.origin - light_record.pos);
         ScalarType area = light_record.hit_geometry->get_area();
         ScalarType pdf = sq_distance / (area * light_cosine);
-        pdf *= (1.0f / n_lights);
+        pdf /= n_lights;
+
+        // TODO: DEBUG only
+        // static int max_print_n = 1000;
+        // printf("%f\n", pdf);
+        // max_print_n--;
+        // if (max_print_n < 0) {
+        //     exit(0);
+        // }
+
         return pdf;
     }
 
@@ -82,43 +91,33 @@ Vector3 AreaLightGroup::sample_light(Vector3 wo, const IHittable& world, const H
 
     // sample light directly
     std::tie(light_wi, light_pdf) = uniform_sample_ray(world, hit_record, light_record);
-    if (light_pdf > 0) {
+    // light > 0, but ignore the case that pdf is very small
+    if (light_pdf > k_eps) {
         // see how the material *scatters* the light ray
         bxdf_pdf = surface_material->pdf(light_wi, wo, hit_record);
-        if (bxdf_pdf > 0) {
+        if (bxdf_pdf > k_eps) {
             Vector3 bxdf = surface_material->bxdf(light_wi, wo, hit_record);
             ScalarType weight = power_heuristic(light_pdf, bxdf_pdf);
             ScalarType wi_normal_cosine = glm::dot(light_wi, hit_record.normal);
             Vector3 emissive = light_record.material->light_emitted();
 
             color += bxdf * emissive * wi_normal_cosine * weight / light_pdf;
-            for (int i = 0; i < 3; i++) {
-                if (std::isfinite(color[i]) == false) {
-                    printf("Bad\n");
-                }
-            }
         }
     }
 
     // sample wi via material scatter, etc
     std::tie(bxdf_wi, bxdf_pdf) = surface_material->sample_wi(wo, hit_record);
-    if (bxdf_pdf > 0) {
-        Ray wi_ray{ .origin = hit_record.pos, .dir = bxdf_wi };
+    if (bxdf_pdf > k_eps) {
+        Ray wi_ray(hit_record.pos, bxdf_wi);
         // see if the ray hits a light
         light_pdf = pdf(wi_ray, world, light_record);
-        if (light_pdf > 0) {
+        if (light_pdf > k_eps) {
             Vector3 bxdf = surface_material->bxdf(bxdf_wi, wo, hit_record);
             ScalarType weight = power_heuristic(bxdf_pdf, light_pdf);
             ScalarType wi_normal_cosine = glm::dot(bxdf_wi, hit_record.normal);
             Vector3 emissive = light_record.material->light_emitted();
 
             color += bxdf * emissive * wi_normal_cosine * weight / bxdf_pdf;
-            // debug check
-            for (int i = 0; i < 3; i++) {
-                if (std::isfinite(color[i]) == false) {
-                    printf("Bad\n");
-                }
-            }
         }
     }
 

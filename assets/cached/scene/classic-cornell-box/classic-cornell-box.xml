@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<camera type="perspective" width="1024" height="1024" fovy="39.3077">
+<camera type="perspective" width="1000" height="1000" fovy="39.3077">
 	<eye x="3.6" y="1.0" z="0.0"/>
 	<lookat x="0.0" y="1.0" z="0.0"/>
 	<up x="0.0" y="1.0" z="0.0"/>
 </camera>
-<light mtlname="light" radiance="33.0, 22.0, 11.0"/>
+<light mtlname="light" radiance="50.0, 30.0, 20.0"/>
 

@@ -25,7 +25,7 @@ bool Triangle::hit(const Ray& ray, Vector2 t_range, HitRecord& hit_record) const
     Vector3 ray_cross_e2 = glm::cross(ray.dir, edge2);
     ScalarType det = glm::dot(edge1, ray_cross_e2);
 
-    if (std::abs(det) < k_eps)
+    if (std::abs(det) < k_small_eps)
         return false; // This ray is parallel to this triangle.
 
     ScalarType inv_det = 1.0f / det;
@@ -58,8 +58,7 @@ bool Triangle::hit(const Ray& ray, Vector2 t_range, HitRecord& hit_record) const
         };
         return true;
     }
-    else // This means that there is a line intersection but not a ray intersection.
-        return false;
+    // This means that there is a line intersection but not a ray intersection.
     return false;
 }
 

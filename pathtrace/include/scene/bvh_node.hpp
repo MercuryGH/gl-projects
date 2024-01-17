@@ -5,6 +5,8 @@
 #include <light/ray.hpp>
 #include <geometry/hittable.hpp>
 #include <geometry/bounding_box.hpp>
+// TODO: debug only
+#include <scene/scene.hpp>
 
 namespace pathtrace {
 
@@ -25,9 +27,14 @@ public:
 
     constexpr static int k_n_children = 2; // binary tree
 
+    void set_scene(Scene* scene) { this->scene = scene; }
+
 private:
     IHittable* children[k_n_children]{ nullptr };
     BoundingBox bbox;
+
+    // for test only
+    Scene* scene;
 };
 
 }

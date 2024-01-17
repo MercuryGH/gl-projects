@@ -48,6 +48,8 @@ public:
 
 	bool key_pressed(int key) const { return pressed_key.find(key) != pressed_key.end(); }
 
+	void set_window_size(uint32_t width, uint32_t height) { glfwSetWindowSize(window, width, height); }
+
 private:
 	friend void glfw_cursor_pos_callback(GLFWwindow* window, double x, double y);
 	friend void glfw_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);

@@ -2,7 +2,8 @@
 
 #include <cmath>
 
-#include <glad/glad.h>
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include <stb_image_write.h>
 
 namespace renderer {
 
@@ -25,6 +26,11 @@ namespace {
 			channel_type = GL_UNSIGNED_BYTE;
 		}
 	}
+}
+
+void save_png_file(std::string path, std::unique_ptr<GLubyte[]> pixels, int width, int height) {
+	stbi_flip_vertically_on_write(true);
+	stbi_write_png(path.c_str(), width, height, 4, pixels.get(), 0);
 }
 
 GlBuffer::GlBuffer(uint64_t size, uint32_t usage, const void* data) : sz(size) {
@@ -100,6 +106,13 @@ void GlTexture2D::set_data(const void* data, uint32_t level) {
 
 void GlTexture2D::generate_mipmap() {
 	glGenerateTextureMipmap(gl_texture);
+}
+
+void GlTexture2D::dump_png_file(uint32_t level) {
+	// hardcode RGBA here
+    auto pixels = std::make_unique<GLubyte[]>(width * height * 4);
+	glGetTextureImage(gl_texture, level, channel_format, channel_type, width * height * 4, pixels.get());
+	save_png_file("./test.png", std::move(pixels), width, height);
 }
 
 }

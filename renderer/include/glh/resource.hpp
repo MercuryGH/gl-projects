@@ -1,6 +1,9 @@
 #pragma once
 
 #include <cstdint>
+#include <memory>
+
+#include <glad/glad.h>
 
 namespace renderer {
 
@@ -26,6 +29,8 @@ private:
 	void* mapped_ptr = nullptr;
 };
 
+void save_png_file(std::string path, std::unique_ptr<GLubyte[]> pixels, int width, int height);
+
 class GlTexture2D {
 public:
 	// if level = 0, generate log_2(min(width, height)) mipmaps
@@ -45,6 +50,8 @@ public:
 	void set_data(const void* data, uint32_t level = 0);
 
 	void generate_mipmap();
+
+	void dump_png_file(uint32_t level = 0);
 
 private:
 	uint32_t gl_texture = 0;

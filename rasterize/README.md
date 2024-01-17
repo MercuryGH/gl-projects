@@ -26,8 +26,6 @@ My `renderer`, and thirdparties:
 * [stb image](https://github.com/nothings/stb)
 * [tinyobjloader](https://github.com/tinyobjloader/tinyobjloader) (read `obj` file)
 
-All thirdpartiy sources are included in `brep/thirdparty`, which will be built by CMake commands.
-
 ## 用户界面使用说明
 
 1. Select a model and click `Load instance` button to load the model. Then the number of triangles of the model is shown. 5 `obj` models are available by default.
@@ -88,7 +86,7 @@ In hierarchical Z-buffer (image space pyramid), first we construct a pyramid usi
 
 Complete version of Hi-z uses scene space octree to ensure nearest triangles are rasterized first. The rasterization process is not done by simply iterate over the triangle list. Instead, we build a octree to "sort" all triangles by their depth value and rasterize the nearest triangles first. See `Scene::build_octree_and_rasterize(triangles)` for detail.
 
-The complete version of Hi-z does not outperform simple version of Hi-z, since the depth information is already known in previous rasterzation. The culled triangles are not much matter.  
+The complete version of Hi-z does not outperform simple version of Hi-z, since the depth information is already known in previous rasterzation. The culled triangles are not much matter.
 
 ## 实验结果报告
 
@@ -100,7 +98,7 @@ The experiment is performed in:
 
 The z-buffer algorithm is completely executed in CPU, so GPU does not matter.
 
-The experiment is performed in order that `Basic -> Simple Mode Hi-z -> Complete mode Hi-z` in the same scene and camera params. 
+The experiment is performed in order that `Basic -> Simple Mode Hi-z -> Complete mode Hi-z` in the same scene and camera params.
 
 | Model / Algo     | #Tri   | Basic (ms)    | Simple Mode Hi-z              | Complete mode Hi-z |
 | ---------------- | ------ | ------------- | ----------------------------- | ------------------ |
@@ -109,7 +107,7 @@ The experiment is performed in order that `Basic -> Simple Mode Hi-z -> Complete
 | Armadillo        | 212574 | **107** | 121                           | 176                |
 | Culled Armadillo | 212576 | 175           | **115 (speedup: 1.52)** | 175                |
 
-From the result we can see that: 
+From the result we can see that:
 
 * In a usual one-model scene, basic z-buffer algorithm has the best efficiency.
 * When the model is occluded (in the test scene Culled Armadillo), refer to @fig:armadillo (culled), the simple mode hi-z algorithm outperforms basic z-buffer by culling most of the triangles. Though complete mode Hi-z still suffers from its slow octree partition process.

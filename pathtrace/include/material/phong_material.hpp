@@ -36,7 +36,7 @@ private:
 
     Vector3 diffuse; // diffuse reflectivity
     Vector3 specular; // specular reflectivity
-    Vector3 emissive; // if it emits light. (0, 0, 0) for non-emissive material
+    Vector3 emissive; // radiance emitted. (0, 0, 0) for non-emissive material
     ScalarType phong_exponent;
 
     std::shared_ptr<TextureRGBf> texture;

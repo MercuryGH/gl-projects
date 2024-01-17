@@ -46,7 +46,21 @@ private:
     int n_triangles{ 0 };
 
     bool is_rendering{ false };
+    bool realtime_update_result{ true };
     float spp_progress{ 0 };
+
+	struct {
+		bool gamma_correction = true;
+	} render_settings;
+
+    struct {
+        float eye[3];
+        float lookat[3];
+        float up[3];
+        float fovy;
+        float width;
+        float height;
+    } camera_settings;
 };
 
 }

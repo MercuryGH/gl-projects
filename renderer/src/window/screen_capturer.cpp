@@ -1,21 +1,17 @@
 #include <window/screen_capturer.hpp>
 
-#include <window/window.hpp>
-
 #include <thread>
 
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include <stb_image_write.h>
+#include <window/window.hpp>
+#include <glh/resource.hpp>
+
+// #define STB_IMAGE_WRITE_IMPLEMENTATION
+// #include <stb_image_write.h>
 
 namespace {
     void save_mp4_frame(FILE* mp4_file_fd, std::unique_ptr<GLubyte[]> pixels, int width, int height) {
         fwrite(pixels.get(), width * height * 4, 1, mp4_file_fd);
     }
-
-    void save_png_file(std::string path, std::unique_ptr<GLubyte[]> pixels, int width, int height) {
-        stbi_flip_vertically_on_write(true);
-        stbi_write_png(path.c_str(), width, height, 4, pixels.get(), 0);
-    };
 
     void save_tga_file(std::string path, std::unique_ptr<GLubyte[]> pixels, int width, int height) {
         FILE *outputFile = fopen(path.c_str(), "w");

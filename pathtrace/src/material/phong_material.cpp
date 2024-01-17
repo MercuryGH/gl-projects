@@ -12,37 +12,45 @@
 namespace pathtrace {
 
 ScalarType PhongMaterial::pdf_diffuse(Vector3 wi, Vector3 wo, Vector3 normal) const {
-    wi = glm::normalize(wi);
-    wo = glm::normalize(wo);
     ScalarType normal_cosine = glm::dot(normal, wi);
     if (normal_cosine <= 0) {
-        return 0;
+        return 0.0f;
     }
 
     return normal_cosine * k_inv_pi;
 }
 
 std::pair<Vector3, ScalarType> PhongMaterial::sample_diffuse(Vector3 wo, const HitRecord& hit_record) const {
-    wo = glm::normalize(wo);
-    Vector3 p = util::get_uniform_unit_sphere_distribution();
-    Vector3 wi = util::local_to_world(p, hit_record.normal);
-    ScalarType pdf = pdf_diffuse(wi, wo, hit_record.normal);
+    ScalarType phi = util::get_uniform_real_distribution(0.0f, k_2pi);
+    ScalarType cos_theta = std::sqrt(1.0f - util::get_uniform_real_distribution(0.0f, 1.0f));
+    ScalarType cos_phi = std::cos(phi);
+    Vector3 p_local = util::unit_sphere_to_cartesian(cos_theta, cos_phi);
+    Vector3 wi = glm::normalize(util::local_to_world(p_local, hit_record.normal));
+    ScalarType wi_normal_cosine = glm::dot(hit_record.normal, wi);
+    ScalarType pdf = wi_normal_cosine <= 0 ? 0.0 : cos_theta * k_inv_pi;
+
+    // // TODO: DEBUG only
+    // static int max_print_n = 1000;
+    // printf("(%f, %f, %f). %f\n", wi.x, wi.y, wi.z, pdf);
+    // max_print_n--;
+    // if (max_print_n < 0) {
+    //     exit(0);
+    // }
+
     return { wi, pdf };
 }
 
 ScalarType PhongMaterial::pdf_specular(Vector3 wi, Vector3 wo, Vector3 normal) const {
-    wi = glm::normalize(wi);
-    wo = glm::normalize(wo);
     ScalarType wi_normal_cosine = glm::dot(normal, wi);
     if (wi_normal_cosine <= 0) {
-        return 0;
+        return 0.0f;
     }
 
     Vector3 wo_reflect = util::reflect(wo, normal);
     ScalarType wi_wr_weight = glm::dot(wi, wo_reflect);
     bool wi_wr_same_dir = wi_wr_weight > 0;
     if (wi_wr_same_dir == false) {
-        return 0;
+        return 0.0f;
     }
 
     // phong ndf (not blinn-phong). Using reflctance instead of half-way vector
@@ -56,12 +64,22 @@ std::pair<Vector3, ScalarType> PhongMaterial::sample_specular(Vector3 wo, const 
     wo = glm::normalize(wo);
     ScalarType phi = util::get_uniform_real_distribution(0.0f, k_2pi);
     ScalarType cos_theta = std::pow(util::get_uniform_real_distribution(0.0f, 1.0f), 1.0f / (phong_exponent + 1));
+
+    // TODO: DEBUG only
+    // static int max_print_n = 1000;
+    // printf("%f\n", diffuse_prob);
+    // max_print_n--;
+    // if (max_print_n < 0) {
+    //     exit(0);
+    // }
+
     ScalarType cos_phi = std::cos(phi);
     Vector3 p = util::unit_sphere_to_cartesian(cos_theta, cos_phi);
 
-    Vector3 w_reflect = util::reflect(wo, hit_record.normal);
-    Vector3 wi = util::local_to_world(p, w_reflect);
-    ScalarType pdf = pdf_specular(wi, wo, hit_record.normal);
+    Vector3 wo_reflect = util::reflect(wo, hit_record.normal);
+    Vector3 wi = glm::normalize(util::local_to_world(p, wo_reflect));
+    ScalarType wi_normal_cosine = glm::dot(wi, hit_record.normal);
+    ScalarType pdf = wi_normal_cosine <= 0 ? 0.0f : k_inv_2pi * (phong_exponent + 1) * std::pow(cos_theta, phong_exponent);
     return { wi, pdf };
 }
 
@@ -84,6 +102,14 @@ ScalarType PhongMaterial::pdf(Vector3 wi, Vector3 wo, const HitRecord& hit_recor
 
     ScalarType diffuse_prob = glm::compMax(kd) / sum_prob;
     ScalarType specular_prob = 1.0f - diffuse_prob;
+
+    // TODO: DEBUG only
+    // static int max_print_n = 1000;
+    // printf("%f\n", diffuse_prob);
+    // max_print_n--;
+    // if (max_print_n < 0) {
+    //     exit(0);
+    // }
 
     ScalarType pdf = diffuse_prob * pdf_diffuse(wi, wo, normal) + specular_prob * pdf_specular(wi, wo, normal);
 
@@ -110,7 +136,7 @@ Vector3 PhongMaterial::bxdf(Vector3 wi, Vector3 wo, const HitRecord& hit_record)
     bool wo_wr_same_dir = wo_wr_weight > 0;
     Vector3 specular_term;
     if (wo_wr_same_dir) {
-        specular_term = ks * k_inv_pi * (phong_exponent + 2) * std::pow(wo_wr_weight, phong_exponent);
+        specular_term = ks * k_inv_2pi * (phong_exponent + 2) * std::pow(wo_wr_weight, phong_exponent);
     } else {
         specular_term = { 0, 0, 0 };
     }
@@ -124,7 +150,7 @@ std::pair<Vector3, ScalarType> PhongMaterial::sample_wi(Vector3 wo, const HitRec
     Vector3 ks = specular;
     wo = glm::normalize(wo);
 
-    ScalarType sum_prob = glm::compMax(ks) + glm::compMax(kd);
+    ScalarType sum_prob = glm::compMax(kd) + glm::compMax(ks);
     if (sum_prob <= 0) {
         return { {0, 0, 0}, 0.0f };
     }
@@ -144,8 +170,8 @@ std::pair<Vector3, ScalarType> PhongMaterial::sample_wi(Vector3 wo, const HitRec
         pdf_d = pdf_diffuse(wi, wo, normal);
     }
 
-    ScalarType normal_cosine = glm::dot(wi, normal);
-    if (normal_cosine <= 0) {
+    ScalarType wi_normal_cosine = glm::dot(wi, normal);
+    if (wi_normal_cosine <= 0) {
         return { wi, 0.0f };
     }
 

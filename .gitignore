@@ -6,6 +6,7 @@
 .cache
 
 build*
+build-release*
 cmake-build*
 
 src-assets

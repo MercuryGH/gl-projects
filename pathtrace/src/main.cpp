@@ -9,7 +9,7 @@ int main(int argc, char** argv) {
 	const uint32_t k_height = 800;
 	Window window(k_width, k_height, "path tracer");
 
-	PathtraceSystem pathtrace_system;
+	PathtraceSystem pathtrace_system(window);
 
 	window.set_resize_callback([&](uint32_t width, uint32_t height) {
 	});
@@ -27,6 +27,8 @@ int main(int argc, char** argv) {
 		if (ImGui::Begin("Statistics")) {
 			float fps = ImGui::GetIO().Framerate;
 			ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / fps, fps);
+
+			ImGui::Separator();
 
 			if (ImGui::Button("Capture current frame", ImVec2(-1, 0))) {
 				std::string capture_path = "./";
