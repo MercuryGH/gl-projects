@@ -24,7 +24,7 @@ void BrepSystemUI::draw_ui() {
 			&create_complicated,
 		};
 
-		const char* instances[] = { 
+		const char* instances[] = {
 			"Cuboid",
 			"Holed Cuboid",
 			"Double Holed Cuboid",
@@ -52,6 +52,7 @@ void BrepSystemUI::draw_ui() {
 		draw_dirty |= ImGui::Checkbox("wireframe", &state.render_wireframe);
 
 		render_settings_dirty |= ImGui::ColorEdit4("color", &state.render_settings.color.x);
+		render_settings_dirty |= ImGui::Checkbox("two side shading", &state.render_settings.two_side);
 	}
 	ImGui::End();
 }

@@ -43,7 +43,7 @@ add_dependencies(shaders_spv build_shaders)
 # project dirs
 
 add_subdirectory(renderer)
-# add_subdirectory(brep)
+add_subdirectory(brep)
 # add_subdirectory(rasterize)
-add_subdirectory(pathtrace)
+# add_subdirectory(pathtrace)
 

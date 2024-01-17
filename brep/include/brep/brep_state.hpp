@@ -19,6 +19,7 @@ private:
 
 	struct {
 		Vector4 color = Vector4((float)0x66 / 0xff, (float)0xcc / 0xff, (float)0xff / 0xff, 1.0f);
+        bool two_side = true;
 	} render_settings;
 };
 

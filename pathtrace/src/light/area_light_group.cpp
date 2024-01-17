@@ -60,14 +60,6 @@ ScalarType AreaLightGroup::pdf(const Ray& ray, const IHittable& world, HitRecord
         ScalarType pdf = sq_distance / (area * light_cosine);
         pdf /= n_lights;
 
-        // TODO: DEBUG only
-        // static int max_print_n = 1000;
-        // printf("%f\n", pdf);
-        // max_print_n--;
-        // if (max_print_n < 0) {
-        //     exit(0);
-        // }
-
         return pdf;
     }
 

@@ -44,10 +44,6 @@ void PathtraceSystem::update(float delta_time)
             parent_dir = state.last_import_scene_path_from_disk;
         }
 
-        // TODO: debug only
-        // parent_dir = "/home/xinghai/codes/opengl/gl-projects/assets/scene/example-scenes-cg23/veach-mis";
-        // read_from_cache = false;
-
         std::string obj_file_path = state.get_file_path(parent_dir, ".obj");
         std::string mtl_file_path = state.get_file_path(parent_dir, ".mtl");
         std::string xml_file_path = state.get_file_path(parent_dir, ".xml");

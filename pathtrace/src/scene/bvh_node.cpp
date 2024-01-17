@@ -18,11 +18,6 @@ bool BvhNode::hit(const Ray& ray, Vector2 t_range, HitRecord& hit_record) const 
     // }
     // return hits;
 
-    // TODO: debug only
-    if (bbox.valid() == false) {
-        assert(false);
-    }
-
     ScalarType t_hit[k_n_children];
     bool hit[k_n_children];
     for (int i = 0; i < k_n_children; i++) {

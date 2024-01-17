@@ -5,7 +5,8 @@
 #include <light/ray.hpp>
 #include <geometry/hittable.hpp>
 #include <geometry/bounding_box.hpp>
-// TODO: debug only
+
+// debug only
 #include <scene/scene.hpp>
 
 namespace pathtrace {

@@ -236,7 +236,7 @@ void Scene::import_scene_file(const char* obj_file_path, const char* mtl_file_pa
     std::vector<IHittable*> objects_shallow_copy = objects;
     bvh_root = build_bvh(objects_shallow_copy);
 
-    // TODO: DEBUG only
+    // DEBUG only
     dynamic_cast<BvhNode*>(bvh_root)->set_scene(this);
 }
 

@@ -4,12 +4,13 @@
 namespace pathtrace {
 
 Vector3 TextureRGBf::at(int x, int y) const {
-    // TODO: modify to [-1,1] repeat uv
+    // current uv strategy: clamp
+    // can modify to [-1,1] to enable repeat uv
     x = util::clamp(x, 0, width - 1);
     y = util::clamp(y, 0, height - 1);
 
     const int idx = (y * width + x) * n_channels;
-    
+
     return { data.at(idx), data.at(idx + 1), data.at(idx + 2) };
 }
 

@@ -9,6 +9,7 @@ namespace brep {
 namespace {
 	struct alignas(16) RenderParams {
 		Vector4 color;
+		int two_side;
 	};
 }
 
@@ -55,6 +56,7 @@ void BrepSystem::do_draw() {
 		auto data = draw_params_buffer->typed_map<RenderParams>(true);
 		// assign value to data (the memory is mapped so that CPU can access)
 		data->color = state.render_settings.color;
+		data->two_side = state.render_settings.two_side ? 1 : 0;
 		// unmap the memory to indicate the GPU to reload it
 		draw_params_buffer->unmap();
 		ui->render_settings_dirty = false;

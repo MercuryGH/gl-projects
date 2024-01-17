@@ -29,7 +29,7 @@ My `renderer`, and thirdparties:
 * [Dear ImGui](https://github.com/ocornut/imgui)
 * [stb image](https://github.com/nothings/stb)
 
-All thirdpartiy sources are included in `renderer/thirdparty` and  `rasteroze/thirdparty`, which will be built by CMake commands.
+All thirdpartiy sources are included in `thirdparty/`, `renderer/thirdparty/`, which will be built by CMake commands.
 
 ## User Interface
 
