@@ -21,6 +21,8 @@ ScalarType PhongMaterial::pdf_diffuse(Vector3 wi, Vector3 wo, Vector3 normal) co
 }
 
 std::pair<Vector3, ScalarType> PhongMaterial::sample_diffuse(Vector3 wo, const HitRecord& hit_record) const {
+    // MI sample with (cos_\theta)
+    // a good formula derivation: https://agraphicsguynotes.com/posts/sample_microfacet_brdf/
     ScalarType phi = util::get_uniform_real_distribution(0.0f, k_2pi);
     ScalarType cos_theta = std::sqrt(1.0f - util::get_uniform_real_distribution(0.0f, 1.0f));
     ScalarType cos_phi = std::cos(phi);
@@ -46,12 +48,11 @@ ScalarType PhongMaterial::pdf_specular(Vector3 wi, Vector3 wo, Vector3 normal) c
     }
 
     // phong ndf (not blinn-phong). Using reflctance instead of half-way vector
-    // ref: https://agraphicsguynotes.com/posts/sample_microfacet_brdf/
     return (phong_exponent + 1) * k_inv_2pi * std::pow(wi_wr_weight, phong_exponent);
 }
 
 std::pair<Vector3, ScalarType> PhongMaterial::sample_specular(Vector3 wo, const HitRecord& hit_record) const {
-    // sample with (cos_\theta)^{\alpha+1}
+    // MI sample with (cos_\theta)^{\alpha+1}
     // biased unit sphere
     wo = glm::normalize(wo);
     ScalarType phi = util::get_uniform_real_distribution(0.0f, k_2pi);

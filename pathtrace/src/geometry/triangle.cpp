@@ -17,7 +17,7 @@ Vector3 Triangle::get_centroid() const {
 
 /**
  * ray-triangle intersection
- * M-T algorithm. ref: GAMES 101 course
+ * M-T algorithm.
 */
 bool Triangle::hit(const Ray& ray, Vector2 t_range, HitRecord& hit_record) const {
     Vector3 edge1 = p(1) - p(0);
@@ -25,6 +25,7 @@ bool Triangle::hit(const Ray& ray, Vector2 t_range, HitRecord& hit_record) const
     Vector3 ray_cross_e2 = glm::cross(ray.dir, edge2);
     ScalarType det = glm::dot(edge1, ray_cross_e2);
 
+    // bad floating point precision problem in this comparision
     if (std::abs(det) < k_small_eps)
         return false; // This ray is parallel to this triangle.
 

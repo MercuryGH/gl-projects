@@ -7,7 +7,7 @@ namespace pathtrace {
 class IHittable;
 
 /**
- * The bvh construction is based on GAMES101 lecture 13, homework 6
+ * The bvh construction is based on simple binary tree
  * ref: https://zhuanlan.zhihu.com/p/479241523?utm_id=0
 */
 IHittable* build_bvh(std::vector<IHittable*>& objects);
