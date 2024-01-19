@@ -55,7 +55,7 @@ private:
     std::vector<IHittable*> objects;
     int total_n_tris{ 0 };
     IHittable* bvh_root{ nullptr };
-    std::vector<IMaterial*> materials;
+    std::vector<AMaterial*> materials;
     AreaLightGroup area_lights;
 
     PinholeCamera camera;

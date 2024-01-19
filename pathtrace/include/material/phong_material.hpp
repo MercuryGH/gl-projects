@@ -8,10 +8,11 @@ namespace pathtrace {
 
 struct TextureRGBf;
 
-class PhongMaterial: public IMaterial {
+class PhongMaterial: public AMaterial {
 public:
-    PhongMaterial(): texture(nullptr) {}
-    PhongMaterial(Vector3 diffuse, Vector3 specular, Vector3 emissive, ScalarType phong_exponent, const std::shared_ptr<TextureRGBf>& texture): diffuse(diffuse), specular(specular), emissive(emissive), phong_exponent(phong_exponent), texture(texture) {}
+    PhongMaterial() = default;
+    PhongMaterial(MaterialIDType material_id): AMaterial(material_id), texture(nullptr) {}
+    PhongMaterial(MaterialIDType material_id, Vector3 diffuse, Vector3 specular, Vector3 emissive, ScalarType phong_exponent, const std::shared_ptr<TextureRGBf>& texture): AMaterial(material_id), diffuse(diffuse), specular(specular), emissive(emissive), phong_exponent(phong_exponent), texture(texture) {}
 
     ScalarType pdf(Vector3 wi, Vector3 wo, const HitRecord& hit_record) const override;
     Vector3 bxdf(Vector3 wi, Vector3 wo, const HitRecord& hit_record) const override;

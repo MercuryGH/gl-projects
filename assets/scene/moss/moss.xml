@@ -5,6 +5,6 @@
 	<up x="0.0" y="1.0" z="0.0"/>
 </camera>
 <light mtlname="Light" radiance="1.5, 3.0, 4.0"/>
-<light mtlname="Red" radiance="20.0, 1.0, 1.0"/>
-<light mtlname="红" radiance="0.3, 0.1, 0.1"/>
+<!-- <light mtlname="Red" radiance="20.0, 1.0, 1.0"/> -->
+<!-- <light mtlname="红" radiance="0.5, 0.1, 0.1"/> -->
 

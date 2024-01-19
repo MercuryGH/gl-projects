@@ -4,6 +4,8 @@
 
 namespace pathtrace {
 
+using MaterialIDType = int;
+
 enum MaterialType {
     ePhong,
     eGlass
@@ -11,9 +13,14 @@ enum MaterialType {
 
 struct HitRecord;
 
-// interface
-class IMaterial {
+// abstract class
+class AMaterial {
 public:
+    AMaterial() = default;
+    AMaterial(MaterialIDType material_id): material_id(material_id) {}
+
+    virtual ~AMaterial() {}
+
     /**
      * light sample pdf based on material property
     */
@@ -38,7 +45,10 @@ public:
     */
     virtual Vector3 light_emitted() const = 0;
 
-    virtual ~IMaterial() {}
+    MaterialIDType id() const { return material_id; }
+
+private:
+    MaterialIDType material_id;
 };
 
 }

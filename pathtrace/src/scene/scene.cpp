@@ -60,15 +60,15 @@ namespace {
     }
 
     // fetch material config
-    std::vector<IMaterial*> fetch_material_config(const renderer::ObjModel& model, const std::unordered_map<std::string, Vector3>& light_radiance_map, bool read_from_cache) {
+    std::vector<AMaterial*> fetch_material_config(const renderer::ObjModel& model, const std::unordered_map<std::string, Vector3>& light_radiance_map, bool read_from_cache) {
         const int n_materials = model.materials().size();
-        std::vector<IMaterial*> materials(n_materials);
+        std::vector<AMaterial*> materials(n_materials);
 
         for (int i = 0; i < n_materials; i++) {
             const auto& material = model.materials().at(i);
             if (material.ior > 1.0f) {
                 // glass
-                GlassMaterial* glass_material = new GlassMaterial(material.ior);
+                GlassMaterial* glass_material = new GlassMaterial(i, material.ior);
                 materials.at(i) = glass_material;
             } else {
                 // phong
@@ -93,7 +93,7 @@ namespace {
                     texture = std::make_shared<TextureRGBf>(data, width, height);
                 }
 
-                PhongMaterial* phong_material = new PhongMaterial(diffuse, specular, emissive, phong_exponent, texture);
+                PhongMaterial* phong_material = new PhongMaterial(i, diffuse, specular, emissive, phong_exponent, texture);
                 materials.at(i) = phong_material;
             }
         }
@@ -160,7 +160,7 @@ void Scene::import_scene_file(const char* obj_file_path, const char* mtl_file_pa
     auto light_config = fetch_light_config(obj_model.xml_document());
     materials = fetch_material_config(obj_model, light_config, read_from_cache);
 
-    std::vector<IAreaLight*> area_light_list;
+    std::unordered_map<int, std::vector<IAreaLight*>> area_light_map;
 
     const auto& shapes = obj_model.shapes();
     const auto& attrib = obj_model.attrib();
@@ -226,12 +226,12 @@ void Scene::import_scene_file(const char* obj_file_path, const char* mtl_file_pa
             // area light object
             if (triangle->get_material()->light_emitted() != Vector3{ 0, 0, 0 }) {
                 TriangularAreaLight* tal = new TriangularAreaLight(*triangle);
-                area_light_list.push_back(tal);
+                area_light_map[material_id].push_back(tal);
             }
         }
     }
 
-    area_lights.set_area_lights(area_light_list);
+    area_lights.set_area_lights(area_light_map);
 
     std::vector<IHittable*> objects_shallow_copy = objects;
     bvh_root = build_bvh(objects_shallow_copy);

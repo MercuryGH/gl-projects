@@ -9,11 +9,11 @@ constexpr ScalarType k_inv_2pi = 1.0 / (2 * k_pi);
 // constexpr ScalarType k_eps = 1e-6;
 // constexpr ScalarType k_small_eps = 1e-9;
 
-// when use single precision floating point
+// when using single precision floating point
 constexpr ScalarType k_eps = 1e-3;
 constexpr ScalarType k_small_eps = 1e-6;
 
-constexpr auto k_max = std::numeric_limits<ScalarType>::max();
+constexpr auto k_max = std::numeric_limits<ScalarType>::max()   ;
 constexpr auto k_min = std::numeric_limits<ScalarType>::min();
 
 namespace util {

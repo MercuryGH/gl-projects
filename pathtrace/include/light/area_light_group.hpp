@@ -6,17 +6,20 @@
 #include <light/ray.hpp>
 #include <light/hit_record.hpp>
 #include <light/area_light.hpp>
+#include <material/material.hpp>
 
 namespace pathtrace {
 
 class AreaLightGroup {
 public:
     AreaLightGroup() {}
-    AreaLightGroup(const std::vector<IAreaLight*>& area_lights): area_lights(area_lights) {}
+    AreaLightGroup(const std::unordered_map<MaterialIDType, std::vector<IAreaLight*>>& area_lights): area_lights(area_lights) {}
     ~AreaLightGroup();
     void clear();
 
-    void set_area_lights(const std::vector<IAreaLight*>& area_lights) {
+    int get_n_lights() const;
+
+    void set_area_lights(const std::unordered_map<MaterialIDType, std::vector<IAreaLight*>>& area_lights) {
         clear();
         this->area_lights = area_lights;
     }
@@ -30,7 +33,7 @@ private:
 
     ScalarType pdf(const Ray& ray, const IHittable& world, HitRecord& hit_record) const;
 
-    std::vector<IAreaLight*> area_lights;
+    std::unordered_map<MaterialIDType, std::vector<IAreaLight*>> area_lights; // (material_id: lights)
 };
 
 }

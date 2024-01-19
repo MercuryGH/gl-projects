@@ -8,10 +8,18 @@ namespace pathtrace {
 
 namespace {
     template<typename T>
-    T uniform_sample(std::vector<T> list) {
+    const T& uniform_sample(const std::vector<T>& list) {
         const int n = list.size();
         int random_index = util::get_uniform_int_distribution(0, n - 1);
         return list.at(random_index);
+    }
+
+    template<typename _, typename T>
+    const T& uniform_sample(const std::unordered_map<_, T>& map) {
+        const int n = map.size();
+        int random_index = util::get_uniform_int_distribution(0, n - 1);
+        auto itr = std::next(std::begin(map), random_index);
+        return (*itr).second;
     }
 }
 
@@ -20,29 +28,40 @@ AreaLightGroup::~AreaLightGroup() {
 }
 
 void AreaLightGroup::clear() {
-    for (auto area_light : area_lights) {
-        delete area_light;
+    for (auto& [_, area_light_list] : area_lights) {
+        for (auto area_light : area_light_list) {
+            delete area_light;
+        }
+        area_light_list.clear();
     }
     area_lights.clear();
 }
 
+int AreaLightGroup::get_n_lights() const {
+    int cnt = 0;
+    for (const auto& [_, light_list] : area_lights) {
+        cnt += light_list.size();
+    }
+    return cnt;
+}
+
 std::pair<Vector3, ScalarType> AreaLightGroup::uniform_sample_ray(const IHittable& world, const HitRecord& prev_record, HitRecord& light_record) const {
-    const int n_lights = area_lights.size();
-    if (n_lights == 0) {
+    if (area_lights.size() == 0) {
         return { { 0, 0, 0 }, 0.0f };
     }
 
-    IAreaLight* light = uniform_sample(area_lights);
-    // IAreaLight* light = area_lights.at(area_lights.size() - 1);
+    const int n_light_groups = area_lights.size();
+    const auto& light_list = uniform_sample(area_lights);
+    const int n_lights_in_group = light_list.size();
+    auto light = uniform_sample(light_list);
 
     auto [ wi, pdf ] = light->uniform_sample_ray(world, prev_record, light_record);
-    pdf /= n_lights;
+    pdf /= (n_light_groups * n_lights_in_group);
     return { wi, pdf };
 }
 
 ScalarType AreaLightGroup::pdf(const Ray& ray, const IHittable& world, HitRecord& light_record) const {
-    const int n_lights = area_lights.size();
-    if (n_lights == 0) {
+    if (area_lights.size() == 0) {
         return 0.0f;
     }
 
@@ -58,7 +77,12 @@ ScalarType AreaLightGroup::pdf(const Ray& ray, const IHittable& world, HitRecord
         ScalarType sq_distance = glm::dot(ray.origin - light_record.pos, ray.origin - light_record.pos);
         ScalarType area = light_record.hit_geometry->get_area();
         ScalarType pdf = sq_distance / (area * light_cosine);
-        pdf /= n_lights;
+
+        const int n_light_groups = area_lights.size();
+        MaterialIDType material_id = light_record.material->id();
+        const int n_lights_in_group = area_lights.at(material_id).size();
+
+        pdf /= (n_light_groups * n_lights_in_group);
 
         return pdf;
     }
