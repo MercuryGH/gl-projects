@@ -1,0 +1,75 @@
+#version 460
+
+#extension GL_GOOGLE_include_directive : enable
+
+#include "particle.glsl"
+#include "../utils/rand.glsl"
+#include "../utils/sample.glsl"
+
+layout(local_size_x = 256) in;
+
+layout(binding = 0) buffer writeonly Particles {
+    Particle particles[];
+};
+
+struct ParticleEmissionSettings {
+    vec3 position;
+    float position_radius;
+    vec3 velocity;
+    float velocity_angle_cos;
+    float mass_min;
+    float mass_max;
+    float life_min;
+    float life_max;
+    float size_min;
+    float size_max;
+};
+
+layout(binding = 1) uniform Settings {
+    ParticleEmissionSettings settings;
+};
+
+layout(binding = 2) uniform EmitParams {
+    uint offset;
+    uint count;
+    uint seed;
+} params;
+
+void main() {
+    // get thread id
+    uint id = gl_GlobalInvocationID.x;
+    if (id >= params.count) {
+        return;
+    }
+
+    // current particle idx
+    uint index = params.offset + id;
+    uint rng_seed = rng_tea(index, params.seed);
+
+    Particle part;
+
+    vec3 position_rand = vec3(rng_next(rng_seed), rng_next(rng_seed), rng_next(rng_seed));
+    part.position = settings.position + uniform_sample_sphere_volume(position_rand) * settings.position_radius;
+
+    float speed = length(settings.velocity);
+    vec3 frame_z = speed == 0.0 ? vec3(0.0, 0.0, 1.0) : settings.velocity / speed;
+    float sign = frame_z.z > 0.0 ? 1.0 : -1.0;
+    const float a = -1.0 / (sign + frame_z.z);
+    const float b = frame_z.x * frame_z.y * a;
+    vec3 frame_x = vec3(1.0 + sign * frame_z.x * frame_z.x * a, sign * b, -sign * frame_z.x);
+    vec3 frame_y = vec3(b, sign + frame_z.y * frame_z.y * a, -frame_z.y);
+
+    vec2 velocity_rand = vec2(rng_next(rng_seed), rng_next(rng_seed));
+    vec3 velocity_local = uniform_sample_cone(velocity_rand, settings.velocity_angle_cos);
+    vec3 velocity_world = frame_x * velocity_local.x + frame_y * velocity_local.y + frame_z * velocity_local.z;
+    part.velocity = velocity_world * speed;
+
+    part.acceleration = vec3(0.0);
+
+    part.mass = rng_next(rng_seed) * (settings.mass_max - settings.mass_min) + settings.mass_min;
+    part.life = rng_next(rng_seed) * (settings.life_max - settings.life_min) + settings.life_min;
+    part.size = rng_next(rng_seed) * (settings.size_max - settings.size_min) + settings.size_min;
+
+    // construct particle 
+    particles[index] = part;
+}

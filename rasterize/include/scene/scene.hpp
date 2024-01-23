@@ -2,7 +2,7 @@
 
 #include <functional>
 
-#include <glh/resource.hpp>
+#include <glh/gl_texture2d.hpp>
 #include <camera/camera.hpp>
 
 #include <scene/triangle.hpp>

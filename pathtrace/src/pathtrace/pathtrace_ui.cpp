@@ -2,7 +2,7 @@
 
 #include <imgui.h>
 
-#include <glh/file_io.hpp>
+#include <glh/file_dialog.hpp>
 
 namespace pathtrace {
 

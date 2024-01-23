@@ -9,6 +9,8 @@
 #include <glad/glad.h>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include <window/window.hpp>
+
 namespace renderer {
 
 namespace {
@@ -60,6 +62,29 @@ void FirstPersonCamera::move(CameraMoveDirection dir, float delta_t) {
         default: break;
     }
     update();
+}
+
+void FirstPersonCamera::tick(const renderer::Window& window, float delta_t) {
+    enable_sprint(window.key_pressed(GLFW_KEY_LEFT_SHIFT));
+
+    if (window.key_pressed(GLFW_KEY_W)) {
+        move(CameraMoveDirection::eForward, delta_t);
+    }
+    if (window.key_pressed(GLFW_KEY_S)) {
+        move(CameraMoveDirection::eBackward, delta_t);
+    }
+    if (window.key_pressed(GLFW_KEY_A)) {
+        move(CameraMoveDirection::eLeft, delta_t);
+    }
+    if (window.key_pressed(GLFW_KEY_D)) {
+        move(CameraMoveDirection::eRight, delta_t);
+    }
+    if (window.key_pressed(GLFW_KEY_SPACE)) {
+        move(CameraMoveDirection::eUp, delta_t);
+    }
+    if (window.key_pressed(GLFW_KEY_LEFT_CONTROL)) {
+        move(CameraMoveDirection::eDown, delta_t);
+    } 
 }
 
 // mouse movement

@@ -2,7 +2,8 @@
 
 #include <functional>
 
-#include <glh/resource.hpp>
+#include <glh/gl_buffer.hpp>
+#include <glh/gl_texture2d.hpp>
 #include <util/progress_percentage.hpp>
 
 #include <material/material.hpp>

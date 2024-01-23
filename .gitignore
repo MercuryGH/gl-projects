@@ -11,8 +11,3 @@ cmake-build*
 
 src-assets
 
-particle*
-shaders/particle*
-bspline*
-shaders/utils*
-

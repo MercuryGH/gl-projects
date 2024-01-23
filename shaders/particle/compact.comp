@@ -1,0 +1,39 @@
+#version 460
+
+#extension GL_GOOGLE_include_directive : enable
+
+#include "particle.glsl"
+
+layout(local_size_x = 512) in;
+
+layout(binding = 0) buffer readonly ParticlesOld {
+    Particle particles_old[];
+};
+
+layout(binding = 1) buffer readonly Indices {
+    uint indices[];
+};
+
+layout(binding = 2) buffer writeonly Particles {
+    Particle particles[];
+};
+
+layout(binding = 3) uniform CompactParams {
+    uint num_particles;
+} params;
+
+void main() {
+    uint index = gl_GlobalInvocationID.x;
+    if (index >= params.num_particles) {
+        return;
+    }
+    
+    uint new_index = indices[index];
+    uint new_index_prev = 0;
+    if (index != 0) {
+        new_index_prev = indices[index - 1];
+    }
+    if (new_index != new_index_prev) {
+        particles[new_index - 1] = particles_old[index];
+    }
+}

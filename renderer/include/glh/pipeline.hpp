@@ -4,7 +4,8 @@
 #include <vector>
 
 #include <glh/program.hpp>
-#include <glh/resource.hpp>
+#include <glh/gl_buffer.hpp>
+#include <glh/gl_texture2d.hpp>
 
 namespace renderer {
 

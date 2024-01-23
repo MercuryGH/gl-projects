@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include <glh/resource.hpp>
+#include <glh/gl_buffer.hpp>
 #include <glh/program.hpp>
 
 #include <brep/brep_ui.hpp>

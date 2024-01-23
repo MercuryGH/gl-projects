@@ -1,0 +1,56 @@
+#version 460
+
+#extension GL_GOOGLE_include_directive : enable
+
+#include "particle.glsl"
+
+layout(local_size_x = 512) in;
+
+layout(binding = 0) buffer readonly Particles {
+    Particle particles[];
+};
+
+layout(binding = 1) buffer writeonly Indices {
+    uint indices[];
+};
+
+layout(binding = 2) buffer writeonly BlockSums {
+    uint block_sums[];
+};
+
+layout(binding = 3) uniform ScanParams {
+    uint num_particles;
+} params;
+
+shared uint sdata[512]; // shared var across threads
+
+void main() {
+    uint index = gl_GlobalInvocationID.x;
+    uint local_index = gl_LocalInvocationID.x;
+
+    uint sum = 0;
+    if (index < params.num_particles) {
+        Particle part = particles[index];
+        // this will eliminate those died particles
+        sum = part.life > 0.0 ? 1 : 0;
+    }
+    sdata[local_index] = sum;
+    barrier(); // built-in functon in TCS and CS.
+
+    for (uint stride = 1; stride < 512; stride <<= 1) {
+        if (local_index >= stride) {
+            sum += sdata[local_index - stride];
+            barrier();
+
+            sdata[local_index] = sum;
+            barrier();
+        }
+    }
+
+    if (index < params.num_particles) {
+        indices[index] = sum;
+    }
+    if (local_index == 511) {
+        block_sums[gl_WorkGroupID.x] = sum;
+    }
+}

@@ -56,26 +56,7 @@ int main(int argc, char** argv) {
 
 			// tick FPCamera
 			if (use_fpc) {
-				fpc->enable_sprint(window.key_pressed(GLFW_KEY_LEFT_SHIFT));
-
-				if (window.key_pressed(GLFW_KEY_W)) {
-					fpc->move(CameraMoveDirection::eForward, delta_t);
-				}
-				if (window.key_pressed(GLFW_KEY_S)) {
-					fpc->move(CameraMoveDirection::eBackward, delta_t);
-				}
-				if (window.key_pressed(GLFW_KEY_A)) {
-					fpc->move(CameraMoveDirection::eLeft, delta_t);
-				}
-				if (window.key_pressed(GLFW_KEY_D)) {
-					fpc->move(CameraMoveDirection::eRight, delta_t);
-				}
-				if (window.key_pressed(GLFW_KEY_SPACE)) {
-					fpc->move(CameraMoveDirection::eUp, delta_t);
-				}
-				if (window.key_pressed(GLFW_KEY_LEFT_CONTROL)) {
-					fpc->move(CameraMoveDirection::eDown, delta_t);
-				}
+				fpc->tick(window, delta_t);
 			}
 			brep_system.set_camera_buffer(camera->get_buffer());
 

@@ -1,0 +1,48 @@
+#version 460
+
+#extension GL_GOOGLE_include_directive : enable
+
+layout(local_size_x = 512) in;
+
+layout(binding = 0) buffer BlockSums {
+    uint block_sums[];
+};
+
+layout(binding = 1) buffer writeonly TotalSum {
+    uint total_sum;
+};
+
+layout(binding = 2) uniform ScanParams {
+    uint size;
+} params;
+
+shared uint sdata[512];
+
+void main() {
+    uint index = gl_GlobalInvocationID.x;
+    uint local_index = gl_LocalInvocationID.x;
+
+    uint sum = 0;
+    if (index < params.size) {
+        sum = block_sums[index];
+    }
+    sdata[local_index] = sum;
+    barrier();
+
+    for (uint stride = 1; stride < 512; stride <<= 1) {
+        if (local_index >= stride) {
+            sum += sdata[local_index - stride];
+            barrier();
+
+            sdata[local_index] = sum;
+            barrier();
+        }
+    }
+
+    if (index < params.size) {
+        block_sums[index] = sum;
+    }
+    if (local_index == 511) {
+        total_sum = sum;
+    }
+}

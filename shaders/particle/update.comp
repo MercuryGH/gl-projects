@@ -1,0 +1,43 @@
+#version 460
+
+#extension GL_GOOGLE_include_directive : enable
+
+#include "particle.glsl"
+
+layout(local_size_x = 256) in;
+
+layout(binding = 0) buffer Particles {
+    Particle particles[];
+};
+
+layout(binding = 1) uniform UpdateParams {
+    vec3 force;
+    float delta_time;
+    uint num_particles;
+    float gravity;
+    float drag;
+} params;
+
+void main() {
+    uint index = gl_GlobalInvocationID.x;
+    if (index >= params.num_particles) {
+        return;
+    }
+
+    Particle part = particles[index];
+    if (part.life <= 0.0) {
+        return;
+    }
+    
+    vec3 acceleration_new = (params.force - part.velocity * params.drag) / part.mass + vec3(0.0, -params.gravity, 0.0);
+    vec3 velocity_half = part.velocity + part.acceleration * params.delta_time * 0.5;
+    vec3 position_new = part.position + velocity_half * params.delta_time;
+    vec3 velocity_new = part.velocity + (part.acceleration + acceleration_new) * params.delta_time * 0.5;
+
+    part.position = position_new;
+    part.velocity = velocity_new;
+    part.acceleration = acceleration_new;
+    part.life -= params.delta_time;
+
+    particles[index] = part;
+}

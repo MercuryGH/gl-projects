@@ -1,0 +1,27 @@
+#version 460
+
+#extension GL_GOOGLE_include_directive : enable
+
+layout(local_size_x = 512) in;
+
+layout(binding = 0) buffer Indices {
+    uint indices[];
+};
+
+layout(binding = 1) buffer readonly BlockSums {
+    uint block_sums[];
+};
+
+layout(binding = 2) uniform ScanParams {
+    uint size;
+} params;
+
+void main() {
+    uint index = gl_GlobalInvocationID.x + 512;
+    if (index >= params.size) {
+        return;
+    }
+
+    uint prev_sum = block_sums[gl_WorkGroupID.x];
+    indices[index] = indices[index] + prev_sum;
+}

@@ -4,7 +4,7 @@
 
 #include <glm/glm.hpp>
 
-#include <glh/resource.hpp>
+#include <glh/gl_buffer.hpp>
 
 namespace renderer {
 

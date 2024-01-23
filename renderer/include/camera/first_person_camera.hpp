@@ -6,7 +6,7 @@
 
 #include <glm/glm.hpp>
 
-#include <glh/resource.hpp>
+#include <glh/gl_buffer.hpp>
 
 namespace renderer {
 
@@ -20,6 +20,7 @@ enum CameraMoveDirection {
 };
 
 class OrbitCamera;
+class Window;
 
 class FirstPersonCamera: public Camera {
 public:
@@ -27,6 +28,7 @@ public:
 	FirstPersonCamera(const OrbitCamera& orbit_camera);
 
 	void enable_sprint(bool flag) { sprint = flag; }
+	void tick(const renderer::Window& window, float delta_t);
 
 	float get_move_speed() const { return move_speed; }
 	void set_move_speed(float move_speed) { this->move_speed = move_speed; }

@@ -6,7 +6,7 @@
 #include <util/cpu_timer.hpp>
 
 #include <window/window.hpp>
-#include <glh/resource.hpp>
+#include <glh/gl_buffer.hpp>
 #include <glh/program.hpp>
 #include <camera/camera.hpp>
 

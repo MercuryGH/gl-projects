@@ -3,7 +3,7 @@
 #include <thread>
 
 #include <window/window.hpp>
-#include <glh/resource.hpp>
+#include <glh/img_output.hpp>
 
 // #define STB_IMAGE_WRITE_IMPLEMENTATION
 // #include <stb_image_write.h>
