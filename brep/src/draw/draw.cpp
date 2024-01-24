@@ -28,13 +28,13 @@ namespace {
 
 			auto v1 = cur_hedge->start_v->coordinate->pos;
 			cur_hedge = cur_hedge->next;
-			
+
 			auto v2 = cur_hedge->start_v->coordinate->pos;
 			cur_hedge = cur_hedge->next;
 
 			origin = v1;
 			x = glm::normalize(v2 - v1);
-			
+
 			while (cur_hedge != hedge_head) {
 				auto v3 = cur_hedge->start_v->coordinate->pos;
 				if (glm::length(glm::cross(v3 - v1, v3 - v2)) > k_eps) {
@@ -47,7 +47,7 @@ namespace {
 		Vector2 project_2d(Vector3 p) {
 			auto diff = p - origin;
 
-			if (glm::dot(diff, z) > k_eps) { 
+			if (glm::dot(diff, z) > k_eps) {
 				// p is not on the plane
 				std::cout << "p = " << p.x << ", " << p.y << ", " << p.z << ", origin = " << origin.x << ", " << origin.y << ", " << origin.z << "\n";
 				assert(false);
@@ -160,15 +160,28 @@ namespace {
 	};
 
 	void construct_vao(uint32_t vao, uint32_t bind_vbo) {
-		glBindVertexArray(vao);
-		glBindBuffer(GL_ARRAY_BUFFER, bind_vbo);
+		// old non-dsa style
+// 		glBindVertexArray(vao);
+// 		glBindBuffer(GL_ARRAY_BUFFER, bind_vbo);
+//
+// 		glEnableVertexAttribArray(0);
+// 		glEnableVertexAttribArray(1);
+//
+// 		// GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const void *pointer
+// 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(offsetof(Vertex, pos)));
+// 		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(offsetof(Vertex, normal)));
 
-		glEnableVertexAttribArray(0);
-		glEnableVertexAttribArray(1);
+		// dsa style
+		glVertexArrayVertexBuffer(vao, 0, bind_vbo, 0, sizeof(Vertex));
 
-		// GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const void *pointer
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(offsetof(Vertex, pos)));
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(offsetof(Vertex, normal)));
+		glEnableVertexArrayAttrib(vao, 0);
+		glEnableVertexArrayAttrib(vao, 1);
+
+		glVertexArrayAttribFormat(vao, 0, 3, GL_FLOAT, GL_FALSE, offsetof(Vertex, pos));
+		glVertexArrayAttribFormat(vao, 1, 3, GL_FLOAT, GL_FALSE, offsetof(Vertex, normal));
+
+		glVertexArrayAttribBinding(vao, 0, 0);
+		glVertexArrayAttribBinding(vao, 1, 0);
 	}
 
 	std::unique_ptr<GlBuffer> create_triangle_vbo(std::vector<Triangle> triangles, uint32_t vao) {
@@ -203,7 +216,7 @@ namespace {
 
 		construct_vao(vao, vbo->id());
 
-		return std::move(vbo);		
+		return std::move(vbo);
 	}
 }
 

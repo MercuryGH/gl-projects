@@ -113,7 +113,7 @@ void PathtraceSystem::update(float delta_time)
     if (scene.is_rendering() == false && state.is_rendering == true) {
         // last draw
         scene.assign_display_texture_data();
-        scene.save_result_to_png_file();
+        // scene.save_result_to_png_file();
     }
     state.is_rendering = scene.is_rendering();
 
