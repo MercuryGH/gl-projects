@@ -3,7 +3,6 @@
 #include <memory>
 
 #include <util/types.hpp>
-#include <util/cpu_timer.hpp>
 
 #include <window/window.hpp>
 #include <glh/gl_buffer.hpp>
@@ -37,8 +36,6 @@ private:
 
 	std::unique_ptr<PathtraceSystemUI> ui;
 	PathtraceSystemState state;
-
-	CpuTimer timer;
 };
 
 }

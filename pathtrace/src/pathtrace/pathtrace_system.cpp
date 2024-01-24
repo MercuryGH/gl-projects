@@ -2,6 +2,8 @@
 
 #include <thread>
 
+#include <util/cpu_timer.hpp>
+
 #include <glad/glad.h>
 #include <glh/pipeline.hpp>
 #include <scene/pinhole_camera.hpp>
@@ -48,6 +50,7 @@ void PathtraceSystem::update(float delta_time)
         std::string mtl_file_path = state.get_file_path(parent_dir, ".mtl");
         std::string xml_file_path = state.get_file_path(parent_dir, ".xml");
 
+        CpuTimer timer;
         timer.start();
 
         scene.import_scene_file(obj_file_path.c_str(), mtl_file_path.c_str(), xml_file_path.c_str(), read_from_cache);
@@ -87,6 +90,7 @@ void PathtraceSystem::update(float delta_time)
     scene.enable_realtime_update_result(state.realtime_update_result);
     if (ui->draw_dirty) {
         std::thread([&] {
+            CpuTimer timer;
             timer.start();
 
             scene.render(state.spp);
