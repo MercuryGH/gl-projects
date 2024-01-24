@@ -285,7 +285,7 @@ Vector3 Scene::path_tracing(const Ray& init_ray, const IHittable& world, int x, 
     constexpr int k_max_bounces = 20;
 
     HitRecord hit_record;
-    bool light_source_in_camera = true; // view the light source directly
+    bool direct_hit_light_source = true; // view the light source directly
     Ray cur_ray = init_ray;
     for (int bounce_cnt = 0; bounce_cnt < k_max_bounces; bounce_cnt++) {
         if (world.hit(cur_ray, Vector2{ k_eps, k_max }, hit_record) == false)  {
@@ -297,7 +297,7 @@ Vector3 Scene::path_tracing(const Ray& init_ray, const IHittable& world, int x, 
         ScalarType wo_normal_cosine = glm::dot(hit_record.normal, wo);
         // hit a light source, special case
         if (hit_record.material->light_emitted() != Vector3{ 0, 0, 0 }) {
-            if (light_source_in_camera && wo_normal_cosine > 0) {
+            if (direct_hit_light_source && wo_normal_cosine > 0) {
                 color += throughput * hit_record.material->light_emitted();
             }
         }
@@ -313,7 +313,7 @@ Vector3 Scene::path_tracing(const Ray& init_ray, const IHittable& world, int x, 
             continue;
         }
 
-        light_source_in_camera = false;
+        direct_hit_light_source = false;
 
         Vector3 light_color = area_lights.sample_light(wo, world, hit_record);
         color += throughput * light_color;
