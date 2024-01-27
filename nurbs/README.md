@@ -26,8 +26,6 @@ This project is based on the algorithms provided in *the NURBS book*.
 
 ## Data Structure and Algorithm
 
-> For detail please see `/src/util.h`, codes are **with comments**.
-
 ### Data Structure
 
 The data structure for NURBS curves and surfaces are from thirdparty library `tinynurbs`.
