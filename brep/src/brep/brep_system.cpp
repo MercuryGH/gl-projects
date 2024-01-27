@@ -79,10 +79,14 @@ void BrepSystem::do_draw() {
 
 	if (state.render_wireframe && wireframe_vbo != nullptr) {
 		glBindVertexArray(wireframe_vao);
-		glDrawArrays(GL_LINES, 0, wireframe_vbo->size());
+
+		// count is the number of indices to be rendered.
+		glDrawArrays(GL_LINES, 0, wireframe_vbo->size() / sizeof(VertexAttr));
 	} else if (tri_vbo != nullptr) {
 		glBindVertexArray(tri_vao);
-		glDrawArrays(GL_TRIANGLES, 0, tri_vbo->size());
+
+		// count is the number of indices to be rendered.
+		glDrawArrays(GL_TRIANGLES, 0, tri_vbo->size() / sizeof(VertexAttr));
 	}
 
 	glBindVertexArray(0);

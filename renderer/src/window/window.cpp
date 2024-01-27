@@ -107,6 +107,7 @@ Window::Window(uint32_t width, uint32_t height, const char* title) : width(width
 
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+    // glfwWindowHint(GLFW_SAMPLES, 4); // 4x msaa
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE);
 	window = glfwCreateWindow(width, height, title, nullptr, nullptr);

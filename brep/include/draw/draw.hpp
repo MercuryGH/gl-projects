@@ -1,11 +1,17 @@
 #pragma once
 
 #include <glh/gl_buffer.hpp>
+#include <util/types.hpp>
 
 #include <memory>
 
 namespace brep {
     using namespace renderer;
+
+struct VertexAttr {
+    Vector3 pos;
+    Vector3 normal;
+};
 
 struct Solid;
 

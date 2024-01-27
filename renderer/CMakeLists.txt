@@ -28,6 +28,9 @@ function(add_thirdparties)
     target_include_directories(tinyxml2 PUBLIC thirdparty/tinyxml2)
 
     add_subdirectory(thirdparty/nativefiledialog)
+
+    add_library(Eigen INTERFACE)
+    target_include_directories(Eigen INTERFACE thirdparty/eigen)
 endfunction()
 
 add_thirdparties()

@@ -11,7 +11,7 @@ int main(int argc, char** argv) {
 	const uint32_t k_height = 600;
 	Window window(k_width, k_height, "nurbs");
 
-	std::unique_ptr<OrbitCamera> oc = std::make_unique<OrbitCamera>(Vector3(0.0f), 10.0f, window.get_aspect());
+	std::unique_ptr<OrbitCamera> oc = std::make_unique<OrbitCamera>(Vector3(0.0f), 20.0f, window.get_aspect());
 	std::unique_ptr<FirstPersonCamera> fpc = nullptr;
 	Camera* camera = oc.get();
 

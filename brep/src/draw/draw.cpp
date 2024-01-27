@@ -18,6 +18,11 @@ namespace {
 		Vector3 normal;
 	};
 
+	struct Segment {
+		Vector3 start;
+		Vector3 end;
+	};
+
 	struct Plane {
 		Vector3 origin;
 		Vector3 x, y, z; // right hand coordinate (unit vec)
@@ -132,11 +137,6 @@ namespace {
 		return triangles;
 	}
 
-	struct Segment {
-		Vector3 start;
-		Vector3 end;
-	};
-
 	std::vector<Segment> generate_segments(Solid* solid) {
 		std::vector<Segment> segments;
 
@@ -154,11 +154,6 @@ namespace {
 		return segments;
 	}
 
-	struct Vertex {
-		Vector3 pos;
-		Vector3 normal;
-	};
-
 	void construct_vao(uint32_t vao, uint32_t bind_vbo) {
 		// old non-dsa style
 // 		glBindVertexArray(vao);
@@ -168,26 +163,26 @@ namespace {
 // 		glEnableVertexAttribArray(1);
 //
 // 		// GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const void *pointer
-// 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(offsetof(Vertex, pos)));
-// 		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(offsetof(Vertex, normal)));
+// 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexAttr), (void*)(offsetof(Vertex, pos)));
+// 		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(VertexAttr), (void*)(offsetof(Vertex, normal)));
 
 		// dsa style
-		glVertexArrayVertexBuffer(vao, 0, bind_vbo, 0, sizeof(Vertex));
+		glVertexArrayVertexBuffer(vao, 0, bind_vbo, 0, sizeof(VertexAttr));
 
 		glEnableVertexArrayAttrib(vao, 0);
 		glEnableVertexArrayAttrib(vao, 1);
 
-		glVertexArrayAttribFormat(vao, 0, 3, GL_FLOAT, GL_FALSE, offsetof(Vertex, pos));
-		glVertexArrayAttribFormat(vao, 1, 3, GL_FLOAT, GL_FALSE, offsetof(Vertex, normal));
+		glVertexArrayAttribFormat(vao, 0, 3, GL_FLOAT, GL_FALSE, offsetof(VertexAttr, pos));
+		glVertexArrayAttribFormat(vao, 1, 3, GL_FLOAT, GL_FALSE, offsetof(VertexAttr, normal));
 
 		glVertexArrayAttribBinding(vao, 0, 0);
 		glVertexArrayAttribBinding(vao, 1, 0);
 	}
 
-	std::unique_ptr<GlBuffer> create_triangle_vbo(std::vector<Triangle> triangles, uint32_t vao) {
+	std::unique_ptr<GlBuffer> create_triangle_vbo(const std::vector<Triangle>& triangles, uint32_t vao) {
 
 		// construct vertex
-		std::vector<Vertex> vertices(triangles.size() * 3);
+		std::vector<VertexAttr> vertices(triangles.size() * 3);
 		for (int i = 0; i < triangles.size(); i++) {
 			for (int j = 0; j < 3; j++) {
 				vertices[i * 3 + j].pos = triangles[i].v[j];
@@ -195,16 +190,16 @@ namespace {
 			}
 		}
 
-		auto vbo = std::make_unique<GlBuffer>(vertices.size() * sizeof(Vertex), 0, vertices.data());
+		auto vbo = std::make_unique<GlBuffer>(vertices.size() * sizeof(VertexAttr), 0, vertices.data());
 
 		construct_vao(vao, vbo->id());
 
 		return std::move(vbo);
 	}
 
-	std::unique_ptr<GlBuffer> create_wireframe_vbo(std::vector<Segment> segments, uint32_t vao) {
+	std::unique_ptr<GlBuffer> create_wireframe_vbo(const std::vector<Segment>& segments, uint32_t vao) {
 		// construct vertex
-		std::vector<Vertex> vertices(segments.size() * 2);
+		std::vector<VertexAttr> vertices(segments.size() * 2);
 		for (int i = 0; i < segments.size(); i++) {
 			vertices[i * 2 + 0].pos = segments[i].start;
 			vertices[i * 2 + 0].normal = Vector3(0, 1, 0);
@@ -212,7 +207,7 @@ namespace {
 			vertices[i * 2 + 1].normal = Vector3(0, 1, 0);
 		}
 
-		auto vbo = std::make_unique<GlBuffer>(vertices.size() * sizeof(Vertex), 0, vertices.data());
+		auto vbo = std::make_unique<GlBuffer>(vertices.size() * sizeof(VertexAttr), 0, vertices.data());
 
 		construct_vao(vao, vbo->id());
 

@@ -1,10 +1,24 @@
 ## Nurbs System
 
-View Nurbs curves and surfaces, and generate skinning meshes.
+Visualize Nurbs curves and surfaces, and generate skinning meshes.
 
 Construct lofting/skinning surfaces described in Chapter 10, Section 10.3 of *the NURBS Book*.
 
 This project is based on the algorithms provided in *the NURBS book*.
+
+## Screenshots
+
+* UI
+
+![](./pic/ui.jpg)
+
+* Before skinning
+
+![](./pic/000.png)
+
+* After skinning
+
+![](./pic/001.png)
 
 ## Extra Thirdparties
 
