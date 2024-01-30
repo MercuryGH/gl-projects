@@ -14,12 +14,12 @@ namespace nurbs {
 
 namespace {
 	struct alignas(16) RenderSurfaceParams {
-		Vector4 color;
+		glm::vec4 color;
 		int two_side;
 	};
 
 	struct alignas(16) RenderLineParams {
-		Vector4 color;
+		glm::vec4 color;
 	};
 
     const Vector4 k_red_color{ 0.9, 0.1, 0.1, 1 };
@@ -55,7 +55,7 @@ void NurbsSystem::update(float delta_time) {
         state.instantiate_caller.at(state.cur_data_idx)(curves);
 
         // This value may change as long as degree < curves.size() is satisfied.
-        constexpr int result_degree = 2; 
+        constexpr int result_degree = 2;
         std::vector<tinynurbs::RationalCurve<ScalarType>> new_curves; // not used, but can be visualized
         // skinning
         auto surface = skinning(curves, result_degree, new_curves);

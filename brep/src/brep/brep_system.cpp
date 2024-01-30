@@ -8,7 +8,7 @@ namespace brep {
 
 namespace {
 	struct alignas(16) RenderParams {
-		Vector4 color;
+		glm::vec4 color;
 		int two_side;
 	};
 }

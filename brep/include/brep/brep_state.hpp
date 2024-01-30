@@ -1,9 +1,9 @@
 #pragma once
 
 #include <unordered_map>
-#include <graph/solid.hpp>
+#include <glm/glm.hpp>
 
-#include <util/types.hpp>
+#include <graph/solid.hpp>
 
 namespace brep {
 
@@ -18,7 +18,7 @@ private:
     bool render_wireframe{ false };
 
 	struct {
-		Vector4 color = Vector4((float)0x66 / 0xff, (float)0xcc / 0xff, (float)0xff / 0xff, 1.0f);
+		glm::vec4 color{ (float)0x66 / 0xff, (float)0xcc / 0xff, (float)0xff / 0xff, 1.0f };
         bool two_side = true;
 	} render_settings;
 };

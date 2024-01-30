@@ -27,12 +27,12 @@ private:
     int cur_data_idx{ 0 };
 
 	struct {
-		Vector4 color{ (float)0x66 / 0xff, (float)0xcc / 0xff, (float)0xff / 0xff, 1.0f };
+		glm::vec4 color{ (float)0x66 / 0xff, (float)0xcc / 0xff, (float)0xff / 0xff, 1.0f };
         bool two_side{ true };
 	} surface_render_settings;
 
     struct {
-        Vector4 color{ (float)0xf7 / 0xff, (float)0xd1 / 0xff, (float)0xff / 0xff, 1.0f };
+        glm::vec4 color{ (float)0xf7 / 0xff, (float)0xd1 / 0xff, (float)0xff / 0xff, 1.0f };
     } curve_render_settings;
 
     bool show_grid{ true };
