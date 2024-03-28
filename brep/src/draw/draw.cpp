@@ -167,14 +167,19 @@ namespace {
 // 		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(VertexAttr), (void*)(offsetof(Vertex, normal)));
 
 		// dsa style
+		// (GLuint vaobj, GLuint bindingindex, GLuint buffer, GLintptr offset, GLsizei stride)
 		glVertexArrayVertexBuffer(vao, 0, bind_vbo, 0, sizeof(VertexAttr));
 
 		glEnableVertexArrayAttrib(vao, 0);
 		glEnableVertexArrayAttrib(vao, 1);
 
+		// tell VAO the vertex format
 		glVertexArrayAttribFormat(vao, 0, 3, GL_FLOAT, GL_FALSE, offsetof(VertexAttr, pos));
 		glVertexArrayAttribFormat(vao, 1, 3, GL_FLOAT, GL_FALSE, offsetof(VertexAttr, normal));
 
+		// tell VAO where the vertex data is
+		// 3rd param is the buffer binding index to fetch the attribute's location with.
+		// the param is 0 since only 1 VBO binded for this VAO (binding index is 0 in glVertexArrayVertexBuffer)
 		glVertexArrayAttribBinding(vao, 0, 0);
 		glVertexArrayAttribBinding(vao, 1, 0);
 	}

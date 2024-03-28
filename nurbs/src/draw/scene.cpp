@@ -36,7 +36,7 @@ void Scene::load(const std::vector<tinynurbs::RationalCurve<ScalarType>>& curves
         glCreateVertexArrays(1, &surface_v_derivative_lines.at(i).vao);
     }
 
-    Vector3 k_zeros{ 0, 0, 0 };
+    const Vector3 k_zeros{ 0, 0, 0 };
     // fetch data
     for (int k = 0; k < n_curves; k++) {
         const auto& curve = curves.at(k);
@@ -50,7 +50,6 @@ void Scene::load(const std::vector<tinynurbs::RationalCurve<ScalarType>>& curves
             u += delta_u;
         }
 
-        auto volatile _vertices = vertices;
         curve_draw_data.at(k).vbo = create_line_vbo(vertices, curve_draw_data.at(k).vao);
 
         // may require type conversion between the 2 data
